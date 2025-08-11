@@ -311,8 +311,9 @@ function saveSet(){
     rec.id=String(Date.now()+Math.random()); state.log.push(rec);
     $('setno').value = String(rec.setno + 1);
   }
-  store.set(state); $('notes').value=''; refreshToday(); renderHistory(); renderWeekly(); toast('Saved');
-}
+store.set(state); $('notes').value='';
+refreshToday(); renderHistory(); renderWeekly(); toast('Saved');
+try { syncUp(); } catch(e) { console.warn('autosync failed', e); }}
 
 function startEdit(id){
   const r=state.log.find(x=>x.id===id); if(!r) return;
@@ -390,7 +391,7 @@ function saveBody(){
   }else{
     rec.id=String(Date.now()+Math.random()); state.body.push(rec);
   }
-  store.set(state); renderBodyKPIs(); renderBodyHistory(); toast('Body saved');
+  store.set(state); renderBodyKPIs(); renderBodyHistory(); toast('Body saved');try { syncUp(); } catch(e) {}
 }
 function editBody(id){
   const r=state.body.find(x=>x.id===id); if(!r) return;
@@ -631,11 +632,75 @@ function uiOut(){const st=$('authStatus'); if(st) st.textContent='Not signed in'
 function uiIn(u){const st=$('authStatus'); if(st) st.textContent='Signed in as '+u.email;['btnSyncUp','btnSyncDown','btnExportCloud'].forEach(id=>{const b=$(id); if(b) b.disabled=false}); const so=$('btnSignOut'); if(so) so.style.display=''; const si=$('btnSignIn'); if(si) si.style.display='none'}
 async function signIn(){if(!auth)return;const p=new firebase.auth.GoogleAuthProvider();try{await auth.signInWithPopup(p)}catch(e){await auth.signInWithRedirect(p)}}
 async function signOut(){if(!auth)return;await auth.signOut()}
-function docRef(){return db&&user?db.collection('gym_progress').doc(user.uid):null}
-async function syncUp(){const r=docRef();if(!r)return;await r.set(Object.assign({},state,{_updatedAt:new Date().toISOString(),_v:1}),{merge:true});toast('Synced to cloud')}
-async function syncDown(){const r=docRef();if(!r)return;const s=await r.get();if(!s.exists)return toast('No cloud data');const d=s.data();state.log=d.log||[];state.body=d.body||[];state.muscles=d.muscles||DEF_MUSCLES;state.exercises=d.exercises||DEF_EXS;store.set(state);init();toast('Pulled from cloud')}
-async function exportCloud(){const r=docRef();if(!r)return;const s=await r.get();if(!s.exists)return toast('No cloud data');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(s.data(),null,2)],{type:'application/json'}));a.download='gym_cloud_backup.json';a.click();URL.revokeObjectURL(a.href)}
+function docRef(){ return db && user ? db.collection('gym_progress').doc(user.uid) : null; }
 
+// ---- Firestore-safe transforms (avoid nested arrays) ----
+function toCloudPayload(){
+  const ex = (state.exercises || []).map(e => {
+    // convert ["Push","Bench"] -> { muscle:"Push", name:"Bench" }
+    if (Array.isArray(e)) return { muscle: e[0], name: e[1] };
+    return e;
+  });
+  return {
+    log: state.log || [],
+    body: state.body || [],
+    muscles: state.muscles || DEF_MUSCLES,
+    exercises: ex,
+    _updatedAt: new Date().toISOString(),
+    _v: 2
+  };
+}
+
+function fromCloudPayload(d){
+  const ex = (d.exercises || []).map(e => {
+    // convert back to internal form for the app
+    if (Array.isArray(e)) return e;
+    return [e.muscle, e.name];
+  });
+  return {
+    log: d.log || [],
+    body: d.body || [],
+    muscles: d.muscles || DEF_MUSCLES,
+    exercises: ex
+  };
+}
+
+// ---- Cloud actions with visible feedback ----
+async function syncUp(){
+  const r = docRef();
+  if (!r) { toast('Sign in to sync'); return; }
+  try{
+    await r.set(toCloudPayload(), { merge: true });
+    toast('Synced to cloud ✓');
+  }catch(e){
+    console.error('SYNC UP ERR', e);
+    toast('Cloud sync failed: ' + (e.message || e.code || 'error'));
+  }
+}
+
+async function syncDown(){
+  const r = docRef();
+  if (!r) { toast('Sign in first'); return; }
+  try{
+    const s = await r.get();
+    if (!s.exists) { toast('No cloud data'); return; }
+    const data = fromCloudPayload(s.data());
+    state.log = data.log; state.body = data.body; state.muscles = data.muscles; state.exercises = data.exercises;
+    store.set(state); init(); toast('Pulled from cloud ✓');
+  }catch(e){
+    console.error('SYNC DOWN ERR', e);
+    toast('Cloud pull failed: ' + (e.message || e.code || 'error'));
+  }
+}
+
+async function exportCloud(){
+  const r = docRef(); if (!r) { toast('Sign in first'); return; }
+  const s = await r.get(); if (!s.exists) return toast('No cloud data');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(s.data(),null,2)],{type:'application/json'}));
+  a.download = 'gym_cloud_backup.json';
+  a.click(); URL.revokeObjectURL(a.href);
+}
 // Init
 function init(){
   document.querySelectorAll('.tab').forEach(tb=>tb.onclick=()=>{
