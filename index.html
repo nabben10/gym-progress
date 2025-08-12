@@ -1,9 +1,11 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Gym Progress</title>
-<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-app-compat.js"></script>
@@ -15,18 +17,24 @@
   --card1:#0a1e44;--card2:#0c2553;--acc:#9BFF3B;
   --rpe-low:#0b3a1b;--rpe-mid:#523b08;--rpe-high:#4a0c12;
 }
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui}
 header{position:sticky;top:0;z-index:10;background:linear-gradient(180deg,#0b1d3f,#0a1733);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:14px 16px}
-h1{margin:0;font-size:18px;font-weight:800}.badge{margin-left:auto;background:var(--acc);color:#06240f;padding:4px 10px;border-radius:999px;font-weight:800;font-size:12px}
+h1{margin:0;font-size:18px;font-weight:800}
+.badge{margin-left:auto;background:var(--acc);color:#06240f;padding:4px 10px;border-radius:999px;font-weight:800;font-size:12px}
 .tabs{position:sticky;top:54px;z-index:9;background:rgba(7,19,46,.75);backdrop-filter:blur(6px);display:flex;gap:10px;padding:10px;border-bottom:1px dashed var(--line)}
-.tab{padding:10px 14px;border-radius:18px;border:1px solid var(--line);color:var(--mut);cursor:pointer}.tab.active{background:var(--acc);border-color:transparent;color:#06240f;font-weight:800}
+.tab{padding:10px 14px;border-radius:18px;border:1px solid var(--line);color:var(--mut);cursor:pointer}
+.tab.active{background:var(--acc);border-color:transparent;color:#06240f;font-weight:800}
 .container{padding:16px;max-width:980px;margin:0 auto}
 .card{background:linear-gradient(180deg,var(--card1),var(--card2));border:1px solid var(--line);border-radius:20px;padding:14px;margin-bottom:16px;box-shadow:0 14px 40px rgba(0,0,0,.35)}
-h2{margin:0 0 10px}label{display:block;font-size:12px;color:var(--mut);margin:8px 0 6px}
+h2{margin:0 0 10px}
+label{display:block;font-size:12px;color:var(--mut);margin:8px 0 6px}
 input,select,textarea{width:100%;padding:12px;border-radius:14px;border:1px solid var(--line);background:#0b1f42;color:var(--ink);font-size:15px}
 input:focus,select:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(155,255,59,.25)}
-.grid{display:grid;grid-template-columns:1fr;gap:10px}@media(min-width:680px){.two{grid-template-columns:1fr 1fr}.three{grid-template-columns:1fr 1fr 1fr}}
-.btns{display:flex;gap:10px;flex-wrap:wrap}button{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#0b1f42;color:var(--ink);font-weight:700;cursor:pointer}
+.grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:680px){.two{grid-template-columns:1fr 1fr}.three{grid-template-columns:1fr 1fr 1fr}}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+button{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#0b1f42;color:var(--ink);font-weight:700;cursor:pointer}
 button.primary{background:var(--acc);color:#06240f;border:none}
 .small{font-size:12px;color:var(--mut)}
 .list-group{border:1px dashed var(--line);border-radius:16px;padding:10px;background:#0b2248}
@@ -54,13 +62,16 @@ button.primary{background:var(--acc);color:#06240f;border:none}
 .ex-head .ex-title{font-weight:900}
 .ex-head .ex-meta{margin-left:auto;font-size:12px;color:var(--mut)}
 /* cards etc */
-.kpi{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.tile{background:#0b1f42;border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
-.val{font-size:22px;font-weight:900;color:var(--acc)}.lab{font-size:12px;color:var(--mut)}
+.kpi{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.tile{background:#0b1f42;border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+.val{font-size:22px;font-weight:900;color:var(--acc)}
+.lab{font-size:12px;color:var(--mut)}
 .session{border:1px solid var(--line);border-radius:20px;padding:12px;background:#0b1f42;margin-bottom:10px}
 .session-head{display:flex;align-items:center;gap:12px;cursor:pointer}
 .session-head:hover{filter:brightness(1.05)}
 .ex{margin-top:10px;border:1px dashed var(--line);border-radius:16px;padding:12px;background:#0b2248}
-.chart-wrap{height:200px}@media (orientation: landscape){.chart-wrap{height:320px}}
+.chart-wrap{height:200px}
+@media (orientation: landscape){.chart-wrap{height:320px}}
 </style>
 </head>
 <body>
@@ -160,7 +171,7 @@ button.primary{background:var(--acc);color:#06240f;border:none}
         <input id="newMuscle" placeholder="Add new muscle group">
         <button class="primary" id="addMuscleBtn">Add Muscle</button>
       </div>
-<div class="small" style="margin-top:6px">Drag by ☰ to reorder. You can rename or delete items anytime.</div>
+      <div class="small" style="margin-top:6px">Drag by ☰ to reorder. You can rename or delete items anytime.</div>
     </div>
 
     <div class="card">
@@ -198,30 +209,60 @@ button.primary{background:var(--acc);color:#06240f;border:none}
 </div>
 <div class="toast" id="toast">Saved!</div>
 
+<!-- SAFE MODE: use ?safe=1 to clear local data & bypass SW -->
 <script>
+(function () {
+  try {
+    var qs = new URLSearchParams(location.search);
+    if (qs.has('safe')) {
+      localStorage.removeItem('gym_store');
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(rs){ rs.forEach(function(r){ r.unregister(); }); });
+      }
+      window.__SAFE_MODE__ = true;
+    }
+  } catch(e) {}
+})();
+</script>
+
+<script>
+/* ---------- helpers & state ---------- */
 const $=id=>document.getElementById(id);
 const todayISO=()=>new Date().toISOString().slice(0,10);
-const pretty=(iso)=>{const [y,m,d]=iso.split('-');return `${d}/${m}/${y}`}
+const pretty=(iso)=>{const [y,m,d]=iso.split('-');return `${d}/${m}/${y}`};
 const simplify=(m)=>m.split('(')[0].trim();
 
-// Defaults
 const DEF_MUSCLES=["Push (Chest/Shoulders/Triceps)","Pull (Back/Biceps)","Legs","Core","Cardio/Conditioning"];
 const DEF_EXS=[["Push (Chest/Shoulders/Triceps)","Dumbbell Bench Press"],["Pull (Back/Biceps)","Lat Pulldown (wide grip)"],["Legs","Leg Press"],["Core","Plank"],["Cardio/Conditioning","Bike"]];
 
-// Store
-const store={get(){try{return JSON.parse(localStorage.getItem('gym_store')||'null')||{log:[],body:[],muscles:DEF_MUSCLES,exercises:DEF_EXS}}catch(e){return {log:[],body:[],muscles:DEF_MUSCLES,exercises:DEF_EXS}}},set(d){localStorage.setItem('gym_store',JSON.stringify(d))}};
+function normalizeState(d){
+  const out = {
+    log: Array.isArray(d?.log) ? d.log : [],
+    body: Array.isArray(d?.body) ? d.body : [],
+    muscles: (Array.isArray(d?.muscles) && d.muscles.length) ? d.muscles : DEF_MUSCLES,
+    exercises: (Array.isArray(d?.exercises) && d.exercises.length) ? d.exercises : DEF_EXS
+  };
+  if (out.exercises.length && !Array.isArray(out.exercises[0])) {
+    out.exercises = out.exercises.map(e => [e.muscle, e.name]);
+  }
+  return out;
+}
+
+const store={get(){
+  try{const raw=JSON.parse(localStorage.getItem('gym_store')||'null')||{};
+      return normalizeState(raw);
+  }catch(e){return normalizeState({})}
+},set(d){localStorage.setItem('gym_store',JSON.stringify(d))}};
+
 const state=store.get();
 let editingId=null, editingBodyId=null;
 const sessionEditMode={}, expandedDates={};
 
 function toast(msg){const t=$('toast');t.textContent=msg||'Saved!';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1200)}
-
-// helpers
 function clampRPE(v){v=Math.round(+v||0); if(v<1)v=1; if(v>10)v=10; return v;}
 function rpeClass(v){if(v<=6)return'rpe-low'; if(v<=8)return'rpe-mid'; return'rpe-high';}
 function e1(w,r){w=+w||0; r=+r||0; return Math.round(w*(1+r/30));}
-function chipClass(name){
-  const s=simplify(name).toLowerCase();
+function chipClass(name){const s=simplify(name).toLowerCase();
   if(s.startsWith('push'))return'push';
   if(s.startsWith('pull'))return'pull';
   if(s.startsWith('legs'))return'legs';
@@ -230,7 +271,7 @@ function chipClass(name){
   return '';
 }
 
-// PR Map
+/* ---------- PR map ---------- */
 function buildPRMap(){
   const byEx={};
   (state.log||[]).forEach(s=>{ (byEx[s.exercise]=byEx[s.exercise]||[]).push(s) });
@@ -251,12 +292,12 @@ function buildPRMap(){
   return prIds;
 }
 
-// Dropdowns
+/* ---------- dropdowns ---------- */
 function populateMuscles(sel){sel.innerHTML=state.muscles.map(m=>`<option value="${m}">${m}</option>`).join(''); if(!sel.value && sel.options.length) sel.value=sel.options[0].value}
 function listExercises(m){return state.exercises.filter(e=>e[0]===m).map(e=>e[1])}
 function populateExercises(sel,m){const L=listExercises(m); sel.innerHTML=L.map(n=>`<option value="${n}">${n}</option>`).join(''); if(!sel.value && sel.options.length) sel.value=sel.options[0].value; if(!sel.options.length) sel.innerHTML='<option value=\"\">Select exercise</option>'}
 
-// === Summary (Today) ===
+/* ---------- Summary (today) ---------- */
 function renderTodaySummary(){
   const L=state.log.filter(r=>r.date===todayISO());
   const vol=L.reduce((a,r)=>a+(+r.weight||0)*(+r.reps||0),0);
@@ -268,14 +309,12 @@ function renderTodaySummary(){
   $('sumPRs').textContent=prs;
 }
 
-// === Today: grouped by exercise ===
+/* ---------- Today grouped by exercise ---------- */
 function refreshToday(){
   const T=state.log.filter(r=>r.date===todayISO());
   if(!T.length){ $('todayList').innerHTML='<div class="small">No sets yet today.</div>'; renderTodaySummary(); return; }
   const prIds=buildPRMap();
-  // group by exercise
-  const byEx={};
-  T.forEach(s=>{ (byEx[s.exercise]=byEx[s.exercise]||[]).push(s) });
+  const byEx={}; T.forEach(s=>{ (byEx[s.exercise]=byEx[s.exercise]||[]).push(s) });
   const blocks=Object.keys(byEx).sort().map(ex=>{
     const arr=byEx[ex].sort((a,b)=>a.setno-b.setno);
     const mus = arr[0]?.muscle || '';
@@ -297,12 +336,11 @@ function refreshToday(){
   renderTodaySummary();
 }
 
-// Save + auto-increment set #
+/* ---------- Save / Edit / Delete (auto-sync) ---------- */
 function saveSet(){
   const rec={date:$('date').value||todayISO(),muscle:$('muscle').value,exercise:$('exercise').value,setno:+($('setno').value||1),weight:+($('weight').value||0),reps:+($('reps').value||0),rpe:clampRPE($('rpe').value),notes:$('notes').value||''};
   if(!rec.exercise) return toast('Pick an exercise');
   if(+$('rpe').value!==rec.rpe){ $('rpe').value=rec.rpe; toast('RPE is limited to 1–10'); }
-
   if(editingId){
     const i=state.log.findIndex(x=>x.id===editingId);
     if(i>=0){ state.log[i]=Object.assign({},state.log[i],rec); }
@@ -311,10 +349,10 @@ function saveSet(){
     rec.id=String(Date.now()+Math.random()); state.log.push(rec);
     $('setno').value = String(rec.setno + 1);
   }
-store.set(state); $('notes').value='';
-refreshToday(); renderHistory(); renderWeekly(); toast('Saved');
-try { syncUp(); } catch(e) { console.warn('autosync failed', e); }}
-
+  store.set(state); $('notes').value='';
+  refreshToday(); renderHistory(); renderWeekly(); toast('Saved');
+  try { syncUp(); } catch(e) { console.warn('autosync save failed', e); }
+}
 function startEdit(id){
   const r=state.log.find(x=>x.id===id); if(!r) return;
   document.querySelector(`.tab[data-tab="log"]`).click();
@@ -324,16 +362,12 @@ function startEdit(id){
 }
 function cancelEdit(){ editingId=null; $('editModeBadge').style.display='none'; $('cancelEditBtn').style.display='none'; $('resetBtn').click(); toast('Edit cancelled') }
 function delSet(id){
-  const i = state.log.findIndex(x => x.id === id);
-  if (i >= 0) state.log.splice(i, 1);
-  store.set(state);
-  refreshToday(); renderHistory(); renderWeekly();
-  toast('Deleted');
+  const i=state.log.findIndex(x=>x.id===id); if(i>=0) state.log.splice(i,1);
+  store.set(state); refreshToday(); renderHistory(); renderWeekly(); toast('Deleted');
   try { syncUp(); } catch(e) { console.warn('autosync delete failed', e); }
 }
-function delSetConfirm(id){ if(confirm('Delete this set?')) delSet(id); }
 
-// === History (unchanged structure, PR icons, RPE pills, collapsible) ===
+/* ---------- History (collapsible date cards with edit mode) ---------- */
 function historyHTML(){
   const prIds=buildPRMap();
   const byDate={}; state.log.forEach(r=>{(byDate[r.date]=byDate[r.date]||[]).push(r)});
@@ -344,7 +378,6 @@ function historyHTML(){
     const totalVol=items.reduce((a,r)=>a+(+r.weight||0)*(+r.reps||0),0);
     const setsCount=items.length;
     const dayHasPR=items.some(x=>prIds.has(x.id));
-
     const byMus={}; items.forEach(r=>{(byMus[r.muscle]=byMus[r.muscle]||[]).push(r)});
     const muscles=Object.keys(byMus);
     const detail = muscles.map(m=>{
@@ -358,13 +391,12 @@ function historyHTML(){
           const isPR = prIds.has(s.id);
           return `<span class="setpill ${pillClass} ${editClass}">${s.weight}×${s.reps} · RPE ${s.rpe}${isPR?' 🏆':''}
             <button class="editbtn" title="Edit" onclick="startEdit('${s.id}')">✏️</button>
-            <button class="editbtn" title="Delete" onclick="delSetConfirm('${s.id}')">🗑️</button>
+            <button class="editbtn" title="Delete" onclick="delSet('${s.id}')">🗑️</button>
           </span>`;
         }).join('');
         return `<div class="ex"><div style="font-weight:800"><button onclick="jumpToChart('${ex}')" style="all:unset;cursor:pointer">${ex}</button> <span class="small">• ${vol.toLocaleString()} kg</span></div><div>${sets}</div></div>`;
       }).join('');
     }).join('');
-
     const chips = groups.map(g=>`<span class="chip ${chipClass(g)}">${simplify(g)}</span>`).join(' ');
     const expanded = !!expandedDates[d];
     const actionBtn = expanded ? `<button onclick="toggleSessionEdit('${d}')" class="${sessionEditMode[d]?'primary':''}">${sessionEditMode[d]?'Done':'Edit sets'}</button>` : '';
@@ -384,11 +416,10 @@ function historyHTML(){
 }
 function toggleExpand(dateStr){ expandedDates[dateStr]=!expandedDates[dateStr]; renderHistory(); }
 function toggleSessionEdit(dateStr){ sessionEditMode[dateStr]=!sessionEditMode[dateStr]; renderHistory(); }
-
 function renderHistory(){ $('sessionHistory').innerHTML = state.log.length? historyHTML() : '<div class="small">No history yet.</div>'; }
 function jumpToChart(ex){ document.querySelector(`.tab[data-tab="charts"]`).click(); fillChartEx(); const sel=$('chEx'); const has=[...sel.options].some(o=>o.value===ex); if(has) sel.value=ex; renderChart(); }
 
-// Body
+/* ---------- Body ---------- */
 function saveBody(){
   const rec={date:$('bdate').value||todayISO(),weight:+($('bweight').value||0),waist:+($('bwaist').value||0),bfat:+($('bfat').value||0)};
   if(editingBodyId){
@@ -398,7 +429,8 @@ function saveBody(){
   }else{
     rec.id=String(Date.now()+Math.random()); state.body.push(rec);
   }
-  store.set(state); renderBodyKPIs(); renderBodyHistory(); toast('Body saved');try { syncUp(); } catch(e) {}
+  store.set(state); renderBodyKPIs(); renderBodyHistory(); toast('Body saved');
+  try { syncUp(); } catch(e) {}
 }
 function editBody(id){
   const r=state.body.find(x=>x.id===id); if(!r) return;
@@ -407,15 +439,11 @@ function editBody(id){
   editingBodyId=id;
 }
 function deleteBody(id){
-  const i = state.body.findIndex(x => x.id === id);
-  if (i >= 0) state.body.splice(i, 1);
-  store.set(state);
-  renderBodyKPIs(); renderBodyHistory();
-  toast('Deleted');
+  const i=state.body.findIndex(x=>x.id===id); if(i>=0) state.body.splice(i,1);
+  store.set(state); renderBodyKPIs(); renderBodyHistory(); toast('Deleted');
   try { syncUp(); } catch(e) {}
 }
 function deleteBodyConfirm(id){ if(confirm('Delete this body entry?')) deleteBody(id); }
-
 function renderBodyKPIs(){
   if(!state.body.length){$('kpiWeight').textContent='–';$('kpiWaist').textContent='–';$('kpiDelta').textContent='–';return;}
   const s=[...state.body].sort((a,b)=>a.date.localeCompare(b.date));
@@ -428,7 +456,7 @@ function renderBodyKPIs(){
 }
 function renderBodyHistory(){
   const L=[...state.body].sort((a,b)=>b.date.localeCompare(a.date));
-  const rows=L.map((r,i)=>{
+  $('bodyHistoryList').innerHTML = L.map((r,i)=>{
     const next=L[i+1];
     let delta='';
     if(next && r.weight && next.weight){
@@ -440,11 +468,10 @@ function renderBodyHistory(){
       <div class="small">Wt ${r.weight||'–'} · Waist ${r.waist||'–'}${delta}</div>
       <div><button onclick="editBody('${r.id}')">✏️</button> <button onclick="deleteBodyConfirm('${r.id}')">🗑️</button></div>
     </div>`;
-  }).join('');
-  $('bodyHistoryList').innerHTML = rows || '<div class="small">No measurements yet.</div>';
+  }).join('') || '<div class="small">No measurements yet.</div>';
 }
 
-// Weekly
+/* ---------- Weekly ---------- */
 function weekRange(){const now=new Date();const day=(now.getDay()+6)%7;const mon=new Date(now);mon.setDate(now.getDate()-day);const sun=new Date(mon);sun.setDate(mon.getDate()+6);return {mon,sun};}
 function inWeek(dateStr){const {mon,sun}=weekRange();const d=new Date(dateStr);return d>=new Date(mon.toDateString()) && d<=new Date(sun.toDateString());}
 function renderWeekly(){
@@ -452,13 +479,12 @@ function renderWeekly(){
   $('wkSets').textContent=L.length;
   $('wkVol').textContent=Math.round(L.reduce((a,r)=>a+(+r.weight||0)*(+r.reps||0),0)).toLocaleString();
   $('wkDays').textContent=new Set(L.map(r=>r.date)).size;
-  const prs=[];
-  const prIds=buildPRMap();
+  const prs=[], prIds=buildPRMap();
   L.forEach(r=>{ if(prIds.has(r.id)) prs.push(`${r.exercise}: ${r.weight}×${r.reps} (RPE ${r.rpe}) 🏆`) });
   $('wkPRs').innerHTML = prs.length? prs.map(p=>`<div class="row"><div class="small">${p}</div></div>`).join('') : '<div class="small">No new PRs this week.</div>';
 }
 
-// Charts
+/* ---------- Charts ---------- */
 let chart=null;
 function fillChartEx(){
   const opts=[...new Set(state.log.map(r=>r.exercise).filter(Boolean))];
@@ -488,44 +514,28 @@ function renderChart(){
   const labels=base.map(x=>pretty(x.date)), vals=base.map(x=>x[metric]);
   const ctx=$('chCanvas').getContext('2d');
   if(chart) chart.destroy();
-  chart=new Chart(ctx,{
-    type:'line',
+  chart=new Chart(ctx,{type:'line',
     data:{labels,datasets:[{label:`${ex} — ${document.querySelector('#chMetric option:checked').textContent}`,data:vals,tension:.3,pointRadius:3,borderWidth:2}]},
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{
-        tooltip:{
-          callbacks:{
-            label:(ctx)=>{
-              const i=ctx.dataIndex; const row=base[i];
-              if(!row) return '';
-              if(row.best){
-                const b=row.best;
-                const vol=(+b.weight||0)*(+b.reps||0);
-                return ` ${b.weight}×${b.reps} · RPE ${b.rpe} · Vol ${vol}`;
-              }else{
-                return ` ${ctx.parsed.y}`;
-              }
-            },
-            title:(items)=>items.length?` ${labels[items[0].dataIndex]}`:''
-          }
-        }
-      },
-      scales:{y:{beginAtZero:false}}
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{tooltip:{callbacks:{
+        label:(ctx)=>{const i=ctx.dataIndex; const row=base[i];
+          if(!row) return '';
+          if(row.best){ const b=row.best; const vol=(+b.weight||0)*(+b.reps||0);
+            return ` ${b.weight}×${b.reps} · RPE ${b.rpe} · Vol ${vol}`;}
+          return ` ${ctx.parsed.y}`;
+        },
+        title:(items)=>items.length?` ${labels[items[0].dataIndex]}`:''
+      }}} , scales:{y:{beginAtZero:false}}
     }
   });
 }
 
-// Settings: drag & drop + merge/rename/remove
+/* ---------- Settings: muscles/exercises (no Merge), DnD ---------- */
 let dragIndexMuscle=null;
 function renderMusclesEditor(){
-  const el = $('musclesList');
+  const el=$('musclesList');
   el.innerHTML = state.muscles.map((m,i)=>`
-    <div class="row" draggable="true" data-idx="${i}"
-         ondragstart="onDragStartMuscle(event,${i})"
-         ondragover="onDragOverMuscle(event,${i})"
-         ondrop="onDropMuscle(event,${i})"
-         ondragend="onDragEndMuscle(event)">
+    <div class="row" draggable="true" data-idx="${i}" ondragstart="onDragStartMuscle(event,${i})" ondragover="onDragOverMuscle(event,${i})" ondrop="onDropMuscle(event,${i})" ondragend="onDragEndMuscle(event)">
       <div class="drag-handle">☰</div>
       <div style="flex:1">${m}</div>
       <div>
@@ -533,50 +543,18 @@ function renderMusclesEditor(){
         <button onclick="removeMuscle(${i})">🗑️ Delete</button>
       </div>
     </div>`).join('') || '<div class="small">No muscles yet.</div>';
-
-  // keep pickers in sync
-  populateMuscles($('muscle'));
-  populateMuscles($('exMuscle'));
+  populateMuscles($('muscle')); populateMuscles($('exMuscle'));
   populateExercises($('exercise'), $('muscle').value);
   renderExerciseEditor();
 }
-
 function onDragStartMuscle(e,i){dragIndexMuscle=i; e.dataTransfer.effectAllowed='move'}
-function onDragOverMuscle(e,i){e.preventDefault();const el=e.currentTarget;el.classList.add('drag-over')}
-function onDropMuscle(e,i){e.preventDefault();e.currentTarget.classList.remove('drag-over');if(dragIndexMuscle===null||dragIndexMuscle===i)return;const arr=state.muscles;const [m]=arr.splice(dragIndexMuscle,1);arr.splice(i,0,m);dragIndexMuscle=null;store.set(state);renderMusclesEditor();toast('Reordered')}
-function onDragEndMuscle(e){const el=e.currentTarget;el.classList.remove('drag-over');dragIndexMuscle=null}
+function onDragOverMuscle(e,i){e.preventDefault();e.currentTarget.classList.add('drag-over')}
+function onDropMuscle(e,i){e.preventDefault();e.currentTarget.classList.remove('drag-over');if(dragIndexMuscle===null||dragIndexMuscle===i)return;const arr=state.muscles;const [m]=arr.splice(dragIndexMuscle,1);arr.splice(i,0,m);dragIndexMuscle=null;store.set(state);renderMusclesEditor();toast('Reordered'); try{syncUp()}catch(e){}}
+function onDragEndMuscle(e){e.currentTarget.classList.remove('drag-over');dragIndexMuscle=null}
+function addMuscle(){const name=$('newMuscle').value.trim(); if(!name)return toast('Enter a muscle name'); if(state.muscles.includes(name))return toast('Already exists'); state.muscles.push(name); store.set(state); $('newMuscle').value=''; renderMusclesEditor(); toast('Muscle added'); try{syncUp()}catch(e){}}
+function renameMuscle(i){const old=state.muscles[i]; const name=prompt('Rename muscle group:', old)||''; const n=name.trim(); if(!n||n===old)return; state.muscles[i]=n; state.exercises=state.exercises.map(([m,x])=>[m===old?n:m, x]); store.set(state); renderMusclesEditor(); renderHistory(); toast('Renamed'); try{syncUp()}catch(e){}}
+function removeMuscle(i){const m=state.muscles[i]; if(!confirm(`Delete "${m}"? Exercises under this label will be hidden from pickers (history stays).`)) return; state.muscles.splice(i,1); state.exercises=state.exercises.filter(e=>e[0]!==m); store.set(state); renderMusclesEditor(); renderHistory(); toast('Muscle removed'); try{syncUp()}catch(e){}}
 
-function addMuscle(){
-  const name=$('newMuscle').value.trim();
-  if(!name) return toast('Enter a muscle name');
-  if(state.muscles.includes(name)) return toast('Already exists');
-  state.muscles.push(name);
-  store.set(state);
-  $('newMuscle').value='';
-  renderMusclesEditor();
-  toast('Muscle added');
-}
-function renameMuscle(i){
-  const old=state.muscles[i];
-  const name=prompt('Rename muscle group:', old) || '';
-  const n=name.trim();
-  if(!n || n===old) return;
-  state.muscles[i]=n;
-  state.exercises = state.exercises.map(([m,x])=>[m===old?n:m, x]);
-  store.set(state);
-  renderMusclesEditor(); renderHistory(); toast('Renamed');
-}
-
-function removeMuscle(i){
-  const m=state.muscles[i];
-  if(!confirm(`Delete "${m}"? Exercises under this label will be hidden from pickers (history stays).`)) return;
-  state.muscles.splice(i,1);
-  state.exercises = state.exercises.filter(e=>e[0]!==m);
-  store.set(state);
-  renderMusclesEditor(); renderHistory(); toast('Muscle removed');
-}
-
-// Exercises drag & drop
 let dragIndexEx=null;
 function renderExerciseEditor(){
   const mus=$('exMuscle').value || state.muscles[0];
@@ -603,35 +581,18 @@ function onDropEx(e,i){
   arr.splice(i,0,moved);
   state.exercises = others.concat(arr);
   dragIndexEx=null;
-  store.set(state); renderExerciseEditor(); toast('Exercises reordered');
+  store.set(state); renderExerciseEditor(); toast('Exercises reordered'); try{syncUp()}catch(e){}
 }
 function onDragEndEx(e){e.currentTarget.classList.remove('drag-over');dragIndexEx=null}
+function addExercise(){const mus=$('exMuscle').value; const name=($('exName').value||'').trim(); if(!mus)return toast('Pick a muscle'); if(!name)return toast('Enter exercise name'); if(state.exercises.find(e=>e[0]===mus && e[1].toLowerCase()===name.toLowerCase())) return toast('Exercise already exists'); state.exercises.push([mus,name]); store.set(state); $('exName').value=''; renderExerciseEditor(); toast('Exercise added'); try{syncUp()}catch(e){}}
+function removeExercise(mus,name){ state.exercises = state.exercises.filter(e=>!(e[0]===mus && e[1]===name)); store.set(state); renderExerciseEditor(); toast('Exercise removed'); try{syncUp()}catch(e){}}
 
-function addExercise(){
-  const mus=$('exMuscle').value;
-  const name=($('exName').value||'').trim();
-  if(!mus) return toast('Pick a muscle');
-  if(!name) return toast('Enter exercise name');
-  if(state.exercises.find(e=>e[0]===mus && e[1].toLowerCase()===name.toLowerCase())) return toast('Exercise already exists');
-  state.exercises.push([mus,name]);
-  store.set(state);
-  $('exName').value='';
-  renderExerciseEditor();
-  toast('Exercise added');
-}
-function removeExercise(mus,name){
-  state.exercises = state.exercises.filter(e=>!(e[0]===mus && e[1]===name));
-  store.set(state);
-  renderExerciseEditor();
-  toast('Exercise removed');
-}
-
-// Backup/restore/csv
+/* ---------- Backup / Restore / CSV ---------- */
 function backupJSON(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));a.download='gym_backup.json';a.click();URL.revokeObjectURL(a.href)}
-function restoreJSON(){const i=document.createElement('input');i.type='file';i.accept='application/json';i.onchange=()=>{const f=i.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);state.log=d.log||[];state.body=d.body||[];state.muscles=d.muscles||DEF_MUSCLES;state.exercises=d.exercises||DEF_EXS;store.set(state);init();toast('Restored')}catch(e){toast('Bad file')}};rd.readAsText(f)};i.click()}
+function restoreJSON(){const i=document.createElement('input');i.type='file';i.accept='application/json';i.onchange=()=>{const f=i.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);const n=normalizeState(d);state.log=n.log;state.body=n.body;state.muscles=n.muscles;state.exercises=n.exercises;store.set(state);init();toast('Restored'); try{syncUp()}catch(e){} }catch(e){toast('Bad file')}};rd.readAsText(f)};i.click()}
 function exportCSV(){const H=['date','muscle','exercise','setno','weight','reps','rpe','notes'];const csv=[H.join(',')].concat(state.log.map(r=>H.map(h=>`"${String(r[h]??'').replaceAll('"','""')}"`).join(','))).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='gym_log.csv';a.click();URL.revokeObjectURL(a.href)}
 
-// Firebase (optional)
+/* ---------- Firebase ---------- */
 const firebaseConfig={apiKey:"AIzaSyCuasVceh5n3C8I9Y5lA3br6LL_19b3_04",authDomain:"gym-progress-a6351.firebaseapp.com",projectId:"gym-progress-a6351",storageBucket:"gym-progress-a6351.firebasestorage.app",messagingSenderId:"129992731703",appId:"1:129992731703:web:a72d2c5aaccb64e35a63b2"};
 let auth=null,db=null,user=null;
 function initFB(){try{firebase.initializeApp(firebaseConfig);auth=firebase.auth();db=firebase.firestore();auth.onAuthStateChanged(u=>{user=u;u?uiIn(u):uiOut()})}catch(e){/* ignore */}}
@@ -641,94 +602,56 @@ async function signIn(){if(!auth)return;const p=new firebase.auth.GoogleAuthProv
 async function signOut(){if(!auth)return;await auth.signOut()}
 function docRef(){ return db && user ? db.collection('gym_progress').doc(user.uid) : null; }
 
-// ---- Firestore-safe transforms (avoid nested arrays) ----
+/* Firestore-safe transforms */
 function toCloudPayload(){
-  const ex = (state.exercises || []).map(e => {
-    // convert ["Push","Bench"] -> { muscle:"Push", name:"Bench" }
-    if (Array.isArray(e)) return { muscle: e[0], name: e[1] };
-    return e;
-  });
-  return {
-    log: state.log || [],
-    body: state.body || [],
-    muscles: state.muscles || DEF_MUSCLES,
-    exercises: ex,
-    _updatedAt: new Date().toISOString(),
-    _v: 2
-  };
+  const ex = (state.exercises || []).map(e => Array.isArray(e) ? { muscle:e[0], name:e[1] } : e);
+  return { log: state.log||[], body: state.body||[], muscles: state.muscles||DEF_MUSCLES, exercises: ex, _updatedAt:new Date().toISOString(), _v:2 };
 }
-
 function fromCloudPayload(d){
-  const ex = (d.exercises || []).map(e => {
-    // convert back to internal form for the app
-    if (Array.isArray(e)) return e;
-    return [e.muscle, e.name];
-  });
-  return {
-    log: d.log || [],
-    body: d.body || [],
-    muscles: d.muscles || DEF_MUSCLES,
-    exercises: ex
-  };
+  const ex = (d.exercises || []).map(e => Array.isArray(e) ? e : [e.muscle, e.name]);
+  return { log: d.log||[], body: d.body||[], muscles: d.muscles||DEF_MUSCLES, exercises: ex };
 }
 
-// ---- Cloud actions with visible feedback ----
+/* Cloud actions with feedback (no merge overwrite) */
 async function syncUp(){
-  const r = docRef();
-  if (!r) { toast('Sign in to sync'); return; }
-  try{
-    await r.set(toCloudPayload();
-    toast('Synced to cloud ✓');
-  }catch(e){
-    console.error('SYNC UP ERR', e);
-    toast('Cloud sync failed: ' + (e.message || e.code || 'error'));
-  }
+  const r = docRef(); if(!r){ toast('Sign in to sync'); return; }
+  try{ await r.set(toCloudPayload()); toast('Synced to cloud ✓'); }
+  catch(e){ console.error('SYNC UP ERR', e); toast('Cloud sync failed: ' + (e.message||e.code||'error')); }
 }
-
 async function syncDown(){
-  const r = docRef();
-  if (!r) { toast('Sign in first'); return; }
+  const r = docRef(); if(!r){ toast('Sign in first'); return; }
   try{
     const s = await r.get();
-    if (!s.exists) { toast('No cloud data'); return; }
-    const data = fromCloudPayload(s.data());
-    state.log = data.log; state.body = data.body; state.muscles = data.muscles; state.exercises = data.exercises;
+    if(!s.exists){ toast('No cloud data'); return; }
+    const data = normalizeState(fromCloudPayload(s.data()));
+    state.log=data.log; state.body=data.body; state.muscles=data.muscles; state.exercises=data.exercises;
     store.set(state); init(); toast('Pulled from cloud ✓');
-  }catch(e){
-    console.error('SYNC DOWN ERR', e);
-    toast('Cloud pull failed: ' + (e.message || e.code || 'error'));
-  }
+  }catch(e){ console.error('SYNC DOWN ERR', e); toast('Cloud pull failed: ' + (e.message||e.code||'error')); }
 }
-
 async function exportCloud(){
-  const r = docRef(); if (!r) { toast('Sign in first'); return; }
-  const s = await r.get(); if (!s.exists) return toast('No cloud data');
+  const r = docRef(); if(!r){ toast('Sign in first'); return; }
+  const s = await r.get(); if(!s.exists) return toast('No cloud data');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(s.data(),null,2)],{type:'application/json'}));
-  a.download = 'gym_cloud_backup.json';
-  a.click(); URL.revokeObjectURL(a.href);
+  a.download = 'gym_cloud_backup.json'; a.click(); URL.revokeObjectURL(a.href);
 }
-// Init
+
+/* ---------- Init & Boot Guard ---------- */
 function init(){
   document.querySelectorAll('.tab').forEach(tb=>tb.onclick=()=>{
     document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
     tb.classList.add('active');
     document.querySelectorAll('.view').forEach(v=>v.style.display='none');
     document.getElementById('view-'+tb.dataset.tab).style.display='block';
-    if(tb.dataset.tab==='charts'){ 
-      fillChartEx();
-      if(!$('chMetric').value) $('chMetric').value='topw';
-      renderChart();
-    }
+    if(tb.dataset.tab==='charts'){ fillChartEx(); if(!$('chMetric').value) $('chMetric').value='topw'; renderChart(); }
     if(tb.dataset.tab==='weekly') renderWeekly();
     if(tb.dataset.tab==='settings'){ renderMusclesEditor(); renderExerciseEditor(); }
   });
   $('todayBadge').textContent=new Date().toLocaleDateString();
   $('todayPretty').textContent=pretty(todayISO());
-  if($('date')) $('date').value=todayISO();
-  if($('bdate')) $('bdate').value=todayISO();
-  populateMuscles($('muscle'));
-  populateMuscles($('exMuscle'));
+  const d=todayISO(); const di=$('date'); if(di){ di.value=d; di.setAttribute('value', d); }
+  const bdi=$('bdate'); if(bdi){ bdi.value=d; bdi.setAttribute('value', d); }
+  populateMuscles($('muscle')); populateMuscles($('exMuscle'));
   populateExercises($('exercise'), $('muscle').value || state.muscles[0]);
   refreshToday(); renderHistory(); renderBodyKPIs(); renderBodyHistory(); renderWeekly(); fillChartEx();
   $('muscle').onchange=()=>populateExercises($('exercise'),$('muscle').value);
@@ -737,15 +660,35 @@ function init(){
   $('backupJSON').onclick=backupJSON; $('restoreJSON').onclick=restoreJSON; $('exportCSV').onclick=exportCSV;
   $('btnSignIn')?.addEventListener('click',signIn); $('btnSignOut')?.addEventListener('click',signOut);
   $('btnSyncUp')?.addEventListener('click',syncUp); $('btnSyncDown')?.addEventListener('click',syncDown); $('btnExportCloud')?.addEventListener('click',exportCloud);
-  $('addMuscleBtn').onclick=addMuscle; $('addExercise').onclick=addExercise;
-  $('exMuscle').onchange=renderExerciseEditor;
-  renderMusclesEditor(); renderExerciseEditor();
+  $('addMuscleBtn').onclick=addMuscle; $('addExercise').onclick=addExercise; $('exMuscle').onchange=renderExerciseEditor;
   $('chMetric').onchange=renderChart; $('chRange').onchange=renderChart; $('chEx').onchange=renderChart;
   document.querySelector('.tab[data-tab="log"]').click();
   const rpe=$('rpe'); rpe.addEventListener('input',()=>{const v=clampRPE(rpe.value); if(String(v)!==String(rpe.value)){ rpe.value=v; toast('RPE is limited to 1–10'); }});
 }
-document.addEventListener('DOMContentLoaded',()=>{ init(); initFB(); });
+
+/* Error overlay + robust boot */
+(function(){
+  function showError(msg){
+    try {
+      var el=document.createElement('div');
+      el.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;background:#ffecf0;color:#5a0a12;border:1px solid #e9a4b1;padding:10px;border-radius:12px;z-index:9999;font:12px/1.4 system-ui';
+      el.textContent='App error: '+msg; document.body.appendChild(el);
+      setTimeout(()=>el.remove(),6000);
+    } catch(_) {}
+  }
+  window.addEventListener('error', e => showError(e.message||'error'));
+  window.addEventListener('unhandledrejection', e => showError((e.reason&&e.reason.message)||'promise error'));
+})();
+function __boot(){ try{ init(); initFB(); }catch(e){ console.error(e); } }
+if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', __boot, {once:true}); } else { __boot(); }
+setTimeout(()=>{ var badge=$('todayBadge'); if(badge && !badge.textContent) __boot(); }, 800);
 </script>
-<script>if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js'));</script>
+
+<!-- Register SW only if not in safe mode -->
+<script>
+if (!window.__SAFE_MODE__ && 'serviceWorker' in navigator) {
+  window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js'));
+}
+</script>
 </body>
 </html>
