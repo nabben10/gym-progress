@@ -323,7 +323,14 @@ function startEdit(id){
   editingId=id; $('editModeBadge').style.display='inline-block'; $('cancelEditBtn').style.display='inline-block';
 }
 function cancelEdit(){ editingId=null; $('editModeBadge').style.display='none'; $('cancelEditBtn').style.display='none'; $('resetBtn').click(); toast('Edit cancelled') }
-function delSet(id){const i=state.log.findIndex(x=>x.id===id); if(i>=0) state.log.splice(i,1); store.set(state); refreshToday(); renderHistory(); renderWeekly(); toast('Deleted');}
+function delSet(id){
+  const i = state.log.findIndex(x => x.id === id);
+  if (i >= 0) state.log.splice(i, 1);
+  store.set(state);
+  refreshToday(); renderHistory(); renderWeekly();
+  toast('Deleted');
+  try { syncUp(); } catch(e) { console.warn('autosync delete failed', e); }
+}
 function delSetConfirm(id){ if(confirm('Delete this set?')) delSet(id); }
 
 // === History (unchanged structure, PR icons, RPE pills, collapsible) ===
@@ -399,7 +406,14 @@ function editBody(id){
   $('bdate').value=r.date; $('bweight').value=r.weight||''; $('bwaist').value=r.waist||''; $('bfat').value=r.bfat||'';
   editingBodyId=id;
 }
-function deleteBody(id){ const i=state.body.findIndex(x=>x.id===id); if(i>=0) state.body.splice(i,1); store.set(state); renderBodyKPIs(); renderBodyHistory(); toast('Deleted'); }
+function deleteBody(id){
+  const i = state.body.findIndex(x => x.id === id);
+  if (i >= 0) state.body.splice(i, 1);
+  store.set(state);
+  renderBodyKPIs(); renderBodyHistory();
+  toast('Deleted');
+  try { syncUp(); } catch(e) {}
+}
 function deleteBodyConfirm(id){ if(confirm('Delete this body entry?')) deleteBody(id); }
 
 function renderBodyKPIs(){
