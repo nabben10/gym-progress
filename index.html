@@ -160,7 +160,7 @@ button.primary{background:var(--acc);color:#06240f;border:none}
         <input id="newMuscle" placeholder="Add new muscle group">
         <button class="primary" id="addMuscleBtn">Add Muscle</button>
       </div>
-      <div class="small" style="margin-top:6px">Drag by ☰ to reorder. Merge moves exercises, with optional history update.</div>
+<div class="small" style="margin-top:6px">Drag by ☰ to reorder. You can rename or delete items anytime.</div>
     </div>
 
     <div class="card">
@@ -519,22 +519,28 @@ function renderChart(){
 // Settings: drag & drop + merge/rename/remove
 let dragIndexMuscle=null;
 function renderMusclesEditor(){
-  const el=$('musclesList');
+  const el = $('musclesList');
   el.innerHTML = state.muscles.map((m,i)=>`
-    <div class="row" draggable="true" data-idx="${i}" ondragstart="onDragStartMuscle(event,${i})" ondragover="onDragOverMuscle(event,${i})" ondrop="onDropMuscle(event,${i})" ondragend="onDragEndMuscle(event)">
+    <div class="row" draggable="true" data-idx="${i}"
+         ondragstart="onDragStartMuscle(event,${i})"
+         ondragover="onDragOverMuscle(event,${i})"
+         ondrop="onDropMuscle(event,${i})"
+         ondragend="onDragEndMuscle(event)">
       <div class="drag-handle">☰</div>
       <div style="flex:1">${m}</div>
       <div>
-        <button onclick="mergeMuscle(${i})">🔗 Merge</button>
         <button onclick="renameMuscle(${i})">✏️ Rename</button>
         <button onclick="removeMuscle(${i})">🗑️ Delete</button>
       </div>
     </div>`).join('') || '<div class="small">No muscles yet.</div>';
+
+  // keep pickers in sync
   populateMuscles($('muscle'));
   populateMuscles($('exMuscle'));
   populateExercises($('exercise'), $('muscle').value);
   renderExerciseEditor();
 }
+
 function onDragStartMuscle(e,i){dragIndexMuscle=i; e.dataTransfer.effectAllowed='move'}
 function onDragOverMuscle(e,i){e.preventDefault();const el=e.currentTarget;el.classList.add('drag-over')}
 function onDropMuscle(e,i){e.preventDefault();e.currentTarget.classList.remove('drag-over');if(dragIndexMuscle===null||dragIndexMuscle===i)return;const arr=state.muscles;const [m]=arr.splice(dragIndexMuscle,1);arr.splice(i,0,m);dragIndexMuscle=null;store.set(state);renderMusclesEditor();toast('Reordered')}
@@ -560,20 +566,7 @@ function renameMuscle(i){
   store.set(state);
   renderMusclesEditor(); renderHistory(); toast('Renamed');
 }
-function mergeMuscle(i){
-  const source=state.muscles[i];
-  const targets=state.muscles.filter((_,idx)=>idx!==i);
-  if(!targets.length) return toast('No target muscle available');
-  const target=prompt('Merge "'+source+'" INTO which muscle? Type exact name:\n'+targets.join('\\n'));
-  if(!target || !targets.includes(target)) return;
-  state.exercises = state.exercises.map(([m,x])=>[m===source?target:m, x]);
-  if(confirm('Also update past logs from "'+source+'" to "'+target+'"? (OK = Yes, Cancel = No)')){
-    state.log.forEach(r=>{ if(r.muscle===source) r.muscle=target; });
-  }
-  state.muscles = state.muscles.filter(m=>m!==source);
-  store.set(state);
-  renderMusclesEditor(); renderHistory(); toast('Merged');
-}
+
 function removeMuscle(i){
   const m=state.muscles[i];
   if(!confirm(`Delete "${m}"? Exercises under this label will be hidden from pickers (history stays).`)) return;
@@ -684,7 +677,7 @@ async function syncUp(){
   const r = docRef();
   if (!r) { toast('Sign in to sync'); return; }
   try{
-    await r.set(toCloudPayload(), { merge: true });
+    await r.set(toCloudPayload();
     toast('Synced to cloud ✓');
   }catch(e){
     console.error('SYNC UP ERR', e);
