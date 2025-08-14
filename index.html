@@ -34,7 +34,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 0
 .grid{display:grid;grid-template-columns:1fr;gap:10px}
 @media(min-width:680px){.two{grid-template-columns:1fr 1fr}.three{grid-template-columns:1fr 1fr 1fr}}
 .btns{display:flex;gap:10px;flex-wrap:wrap}
-button{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#0b1f42;color:var(--ink);font-weight:700;cursor:pointer}
+button{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#0b1f42;color:#var(--ink);font-weight:700;cursor:pointer}
 button.primary{background:var(--acc);color:#06240f;border:none}
 .small{font-size:12px;color:var(--mut)}
 .list-group{border:1px dashed var(--line);border-radius:16px;padding:10px;background:#0b2248}
@@ -54,6 +54,15 @@ button.primary{background:var(--acc);color:#06240f;border:none}
 .chip.legs{background:rgba(178,107,255,.15);color:#ead7ff;border-color:rgba(178,107,255,.35)}
 .chip.core{background:rgba(61,184,255,.15);color:#d0ecff;border-color:rgba(61,184,255,.35)}
 .chip.cardio{background:rgba(255,103,179,.15);color:#ffd3ea;border-color:rgba(255,103,179,.35)}
+/* chips wrapper to avoid overlap */
+.chips{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+/* quick RPE chips */
+.rpechip{
+  display:inline-block; padding:6px 10px; border-radius:999px;
+  border:1px solid var(--line); background:#0b2a57; cursor:pointer;
+  user-select:none; font-weight:800;
+}
+.rpechip:active{ filter:brightness(1.15); }
 /* toast */
 .toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;transition:all .25s;z-index:20;background:var(--acc);color:#06240f;padding:10px 14px;border-radius:999px;font-weight:800;border:1px solid #90ef2b}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -90,7 +99,15 @@ button.primary{background:var(--acc);color:#06240f;border:none}
     <div class="card"><h2>Log a Set <span class="badge-warn" id="editModeBadge" style="display:none">EDITING</span></h2>
       <div class="grid two"><div><label>Date</label><input type="date" id="date"></div><div><label>Muscle Group</label><select id="muscle"></select></div></div>
       <div class="grid two"><div><label>Exercise</label><select id="exercise"></select></div><div><label>Set #</label><input type="number" id="setno" min="1" value="1"></div></div>
-      <div class="grid three"><div><label>Weight (kg)</label><input type="number" id="weight" step="0.5"></div><div><label>Reps</label><input type="number" id="reps" value="8"></div><div><label>RPE (1–10)</label><input type="number" id="rpe" min="1" max="10" step="1" value="7"></div></div>
+      <div class="grid three">
+        <div><label>Weight (kg)</label><input type="number" id="weight" step="0.5"></div>
+        <div><label>Reps</label><input type="number" id="reps" value="8"></div>
+        <div>
+          <label>RPE (1–10)</label>
+          <input type="number" id="rpe" min="1" max="10" step="1" inputmode="numeric" placeholder="1–10" value="7">
+          <div id="rpeQuick" class="small" style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"></div>
+        </div>
+      </div>
       <label>Notes</label><textarea id="notes"></textarea>
       <div class="btns"><button id="resetBtn">Reset</button><button class="primary" id="saveBtn">Save Set</button><button id="cancelEditBtn" style="display:none">Cancel Edit</button></div>
     </div>
@@ -261,7 +278,8 @@ const sessionEditMode={}, expandedDates={};
 function toast(msg){const t=$('toast');t.textContent=msg||'Saved!';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1200)}
 function clampRPE(v){v=Math.round(+v||0); if(v<1)v=1; if(v>10)v=10; return v;}
 function rpeClass(v){if(v<=6)return'rpe-low'; if(v<=8)return'rpe-mid'; return'rpe-high';}
-function e1(w,r){w=+w||0; r=+r||0; return Math.round(w*(1+r/30));}
+// Estimated 1RM with precision
+function e1(w,r){ w=+w||0; r=+r||0; return +(w*(1+r/30)).toFixed(2); }
 function chipClass(name){const s=simplify(name).toLowerCase();
   if(s.startsWith('push'))return'push';
   if(s.startsWith('pull'))return'pull';
@@ -271,24 +289,33 @@ function chipClass(name){const s=simplify(name).toLowerCase();
   return '';
 }
 
-/* ---------- PR map ---------- */
+/* ---------- Cloud timestamp helpers ---------- */
+function setCloudStamp(ts){ try{ localStorage.setItem('gym_cloud_at', ts || ''); }catch(e){} }
+function getCloudStamp(){ try{ return localStorage.getItem('gym_cloud_at') || ''; }catch(e){ return ''; } }
+
+/* ---------- PR map (multiple per day if each beats all-time best) ---------- */
 function buildPRMap(){
   const byEx={};
   (state.log||[]).forEach(s=>{ (byEx[s.exercise]=byEx[s.exercise]||[]).push(s) });
   const prIds=new Set();
+  const EPS=1e-6;
+
   Object.keys(byEx).forEach(ex=>{
-    const arr=byEx[ex].slice().sort((a,b)=>a.date.localeCompare(b.date));
-    let bestBefore=0; let i=0;
-    while(i<arr.length){
-      const d=arr[i].date; const sameDay=[];
-      while(i<arr.length && arr[i].date===d){ sameDay.push(arr[i]); i++; }
-      const dayBest=Math.max(...sameDay.map(s=>e1(s.weight,s.reps)));
-      if(dayBest>bestBefore){
-        sameDay.forEach(s=>{ if(e1(s.weight,s.reps)===dayBest) prIds.add(s.id) });
-        bestBefore=dayBest;
+    const arr=byEx[ex].slice().sort((a,b)=>{
+      const d=a.date.localeCompare(b.date);
+      return d!==0 ? d : ((+a.setno||0)-(+b.setno||0));
+    });
+    let bestBefore=-Infinity;
+    for(const s of arr){
+      const val=e1(s.weight,s.reps);
+      if (val > bestBefore + EPS){      // strictly better than *all-time* best so far
+        prIds.add(s.id);
+        bestBefore = val;
       }
+      // equal (within EPS) → not a PR; lower → not a PR
     }
   });
+
   return prIds;
 }
 
@@ -397,14 +424,14 @@ function historyHTML(){
         return `<div class="ex"><div style="font-weight:800"><button onclick="jumpToChart('${ex}')" style="all:unset;cursor:pointer">${ex}</button> <span class="small">• ${vol.toLocaleString()} kg</span></div><div>${sets}</div></div>`;
       }).join('');
     }).join('');
-    const chips = groups.map(g=>`<span class="chip ${chipClass(g)}">${simplify(g)}</span>`).join(' ');
+    const chips = groups.map(g=>`<span class="chip ${chipClass(g)}">${simplify(g)}</span>`).join('');
     const expanded = !!expandedDates[d];
     const actionBtn = expanded ? `<button onclick="toggleSessionEdit('${d}')" class="${sessionEditMode[d]?'primary':''}">${sessionEditMode[d]?'Done':'Edit sets'}</button>` : '';
     return `<div class="session">
       <div class="session-head" onclick="toggleExpand('${d}')">
         <div style="width:8px;height:8px;background:#3cff7f;border-radius:999px"></div>
         <div style="font-weight:800;font-size:18px">${pretty(d)}${dayHasPR?' 🏆':''}</div>
-        <div>${chips}</div>
+        <div class="chips">${chips}</div>
         <div class="session-actions"><div class="small">${setsCount} sets • ${totalVol.toLocaleString()} kg</div></div>
       </div>
       <div id="detail-${d}" style="display:${expanded?'block':'none'};margin-top:10px">
@@ -466,7 +493,7 @@ function renderBodyHistory(){
     return `<div class="row">
       <div><strong>${pretty(r.date)}</strong></div>
       <div class="small">Wt ${r.weight||'–'} · Waist ${r.waist||'–'}${delta}</div>
-      <div><button onclick="editBody('${r.id}')">✏️</button> <button onclick="deleteBodyConfirm('${r.id}')">🗑️</button></div>
+      <div><button onclick="editBody('${r.id}')" title="Edit">✏️</button> <button onclick="deleteBodyConfirm('${r.id}')" title="Delete">🗑️</button></div>
     </div>`;
   }).join('') || '<div class="small">No measurements yet.</div>';
 }
@@ -516,16 +543,22 @@ function renderChart(){
   if(chart) chart.destroy();
   chart=new Chart(ctx,{type:'line',
     data:{labels,datasets:[{label:`${ex} — ${document.querySelector('#chMetric option:checked').textContent}`,data:vals,tension:.3,pointRadius:3,borderWidth:2}]},
-    options:{responsive:true,maintainAspectRatio:false,
+    options:{
+      responsive:true,maintainAspectRatio:false,
       plugins:{tooltip:{callbacks:{
-        label:(ctx)=>{const i=ctx.dataIndex; const row=base[i];
-          if(!row) return '';
-          if(row.best){ const b=row.best; const vol=(+b.weight||0)*(+b.reps||0);
-            return ` ${b.weight}×${b.reps} · RPE ${b.rpe} · Vol ${vol}`;}
-          return ` ${ctx.parsed.y}`;
+        label:(ctx)=>{
+          const i=ctx.dataIndex; const row=base[i];
+          const val=Number(ctx.parsed.y);
+          if(($('chMetric').value||'')==='e1rm') return ` ${val.toFixed(2)}`;
+          if(row && row.best){
+            const b=row.best; const vol=(+b.weight||0)*(+b.reps||0);
+            return ` ${b.weight}×${b.reps} · RPE ${b.rpe} · Vol ${vol}`;
+          }
+          return ` ${val}`;
         },
         title:(items)=>items.length?` ${labels[items[0].dataIndex]}`:''
-      }}} , scales:{y:{beginAtZero:false}}
+      }}},
+      scales:{ y:{ ticks:{ callback:(v)=>Number(v).toFixed(1) } } }
     }
   });
 }
@@ -539,8 +572,8 @@ function renderMusclesEditor(){
       <div class="drag-handle">☰</div>
       <div style="flex:1">${m}</div>
       <div>
-        <button onclick="renameMuscle(${i})">✏️ Rename</button>
-        <button onclick="removeMuscle(${i})">🗑️ Delete</button>
+        <button onclick="renameMuscle(${i})" title="Rename">✏️</button>
+        <button onclick="removeMuscle(${i})" title="Delete">🗑️</button>
       </div>
     </div>`).join('') || '<div class="small">No muscles yet.</div>';
   populateMuscles($('muscle')); populateMuscles($('exMuscle'));
@@ -564,7 +597,7 @@ function renderExerciseEditor(){
     <div class="row" draggable="true" data-idx="${idx}" ondragstart="onDragStartEx(event,${idx})" ondragover="onDragOverEx(event,${idx})" ondrop="onDropEx(event,${idx})" ondragend="onDragEndEx(event)">
       <div class="drag-handle">☰</div>
       <div style="flex:1"><strong>${name}</strong><div class="small">${mus}</div></div>
-      <div><button onclick="removeExercise('${mus}','${name.replace(/"/g,'&quot;')}')">🗑️ Remove</button></div>
+      <div><button onclick="removeExercise('${mus}','${name.replace(/"/g,'&quot;')}')" title="Remove">🗑️</button></div>
     </div>`).join('') || '<div class="small">No exercises yet for this muscle.</div>';
   if($('muscle').value===mus) populateExercises($('exercise'), mus);
   fillChartEx();
@@ -597,7 +630,14 @@ const firebaseConfig={apiKey:"AIzaSyCuasVceh5n3C8I9Y5lA3br6LL_19b3_04",authDomai
 let auth=null,db=null,user=null;
 function initFB(){try{firebase.initializeApp(firebaseConfig);auth=firebase.auth();db=firebase.firestore();auth.onAuthStateChanged(u=>{user=u;u?uiIn(u):uiOut()})}catch(e){/* ignore */}}
 function uiOut(){const st=$('authStatus'); if(st) st.textContent='Not signed in';['btnSyncUp','btnSyncDown','btnExportCloud'].forEach(id=>{const b=$(id); if(b) b.disabled=true}); const so=$('btnSignOut'); if(so) so.style.display='none'; const si=$('btnSignIn'); if(si) si.style.display=''}
-function uiIn(u){const st=$('authStatus'); if(st) st.textContent='Signed in as '+u.email;['btnSyncUp','btnSyncDown','btnExportCloud'].forEach(id=>{const b=$(id); if(b) b.disabled=false}); const so=$('btnSignOut'); if(so) so.style.display=''; const si=$('btnSignIn'); if(si) si.style.display='none'}
+function uiIn(u){
+  const st=$('authStatus'); if(st) st.textContent='Signed in as '+u.email;
+  ['btnSyncUp','btnSyncDown','btnExportCloud'].forEach(id=>{const b=$(id); if(b) b.disabled=false});
+  const so=$('btnSignOut'); if(so) so.style.display='';
+  const si=$('btnSignIn'); if(si) si.style.display='none';
+  // Auto-pull once on sign-in/startup if cloud has newer data
+  autoPullOnSignIn();
+}
 async function signIn(){if(!auth)return;const p=new firebase.auth.GoogleAuthProvider();try{await auth.signInWithPopup(p)}catch(e){await auth.signInWithRedirect(p)}}
 async function signOut(){if(!auth)return;await auth.signOut()}
 function docRef(){ return db && user ? db.collection('gym_progress').doc(user.uid) : null; }
@@ -612,11 +652,42 @@ function fromCloudPayload(d){
   return { log: d.log||[], body: d.body||[], muscles: d.muscles||DEF_MUSCLES, exercises: ex };
 }
 
+/* Auto-pull once on sign-in if cloud is newer (or local is empty) */
+async function autoPullOnSignIn(){
+  const r = docRef(); if(!r) return;
+  try{
+    const snap = await r.get();
+    if(!snap.exists) return;
+    const cloud = snap.data() || {};
+    const cloudAt = cloud._updatedAt || '';
+    const localAt = getCloudStamp();
+    const localEmpty = !state.log?.length && !state.body?.length && !(state.muscles?.length>0 && state.exercises?.length>0);
+
+    if (localEmpty || (cloudAt && cloudAt > localAt)){
+      const data = normalizeState(fromCloudPayload(cloud));
+      state.log = data.log; state.body = data.body; state.muscles = data.muscles; state.exercises = data.exercises;
+      store.set(state);
+      setCloudStamp(cloudAt);
+      init();
+      toast('Auto-pulled from cloud ✓');
+    }
+  }catch(e){
+    console.warn('AUTO PULL ERR', e);
+  }
+}
+
 /* Cloud actions with feedback (no merge overwrite) */
 async function syncUp(){
   const r = docRef(); if(!r){ toast('Sign in to sync'); return; }
-  try{ await r.set(toCloudPayload()); toast('Synced to cloud ✓'); }
-  catch(e){ console.error('SYNC UP ERR', e); toast('Cloud sync failed: ' + (e.message||e.code||'error')); }
+  try{
+    const payload = toCloudPayload();
+    await r.set(payload);
+    setCloudStamp(payload._updatedAt);
+    toast('Synced to cloud ✓');
+  }catch(e){
+    console.error('SYNC UP ERR', e);
+    toast('Cloud sync failed: ' + (e.message||e.code||'error'));
+  }
 }
 async function syncDown(){
   const r = docRef(); if(!r){ toast('Sign in first'); return; }
@@ -625,8 +696,14 @@ async function syncDown(){
     if(!s.exists){ toast('No cloud data'); return; }
     const data = normalizeState(fromCloudPayload(s.data()));
     state.log=data.log; state.body=data.body; state.muscles=data.muscles; state.exercises=data.exercises;
-    store.set(state); init(); toast('Pulled from cloud ✓');
-  }catch(e){ console.error('SYNC DOWN ERR', e); toast('Cloud pull failed: ' + (e.message||e.code||'error')); }
+    store.set(state);
+    setCloudStamp(s.data()._updatedAt || new Date().toISOString());
+    init();
+    toast('Pulled from cloud ✓');
+  }catch(e){
+    console.error('SYNC DOWN ERR', e);
+    toast('Cloud pull failed: ' + (e.message||e.code||'error'));
+  }
 }
 async function exportCloud(){
   const r = docRef(); if(!r){ toast('Sign in first'); return; }
@@ -663,7 +740,23 @@ function init(){
   $('addMuscleBtn').onclick=addMuscle; $('addExercise').onclick=addExercise; $('exMuscle').onchange=renderExerciseEditor;
   $('chMetric').onchange=renderChart; $('chRange').onchange=renderChart; $('chEx').onchange=renderChart;
   document.querySelector('.tab[data-tab="log"]').click();
-  const rpe=$('rpe'); rpe.addEventListener('input',()=>{const v=clampRPE(rpe.value); if(String(v)!==String(rpe.value)){ rpe.value=v; toast('RPE is limited to 1–10'); }});
+
+  // RPE UX: chips + clamp on blur (no auto "1" while typing)
+  const rpe=$('rpe');
+  (function(){
+    const wrap=$('rpeQuick');
+    if(!wrap) return;
+    wrap.innerHTML=[6,7,8,9,10].map(v=>`<span class="rpechip" data-v="${v}">${v}</span>`).join('');
+    wrap.querySelectorAll('.rpechip').forEach(el=>{
+      el.onclick=()=>{ rpe.value=el.dataset.v; rpe.blur(); };
+    });
+  })();
+  rpe.addEventListener('keydown',e=>{ if(e.key==='Enter') rpe.blur(); });
+  rpe.addEventListener('blur',()=>{
+    if(rpe.value==='') return;
+    const v=clampRPE(rpe.value);
+    if(String(v)!==String(rpe.value)){ rpe.value=v; toast('RPE must be 1–10'); }
+  });
 }
 
 /* Error overlay + robust boot */
