@@ -34,7 +34,72 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 0
 .grid{display:grid;grid-template-columns:1fr;gap:10px}
 @media(min-width:680px){.two{grid-template-columns:1fr 1fr}.three{grid-template-columns:1fr 1fr 1fr}}
 .btns{display:flex;gap:10px;flex-wrap:wrap}
-button{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#0b1f42;color:white;font-weight:700;cursor:pointer}
+/* Buttons — mobile friendly, accessible, iOS-safe text color */
+button{
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 12px 14px;              /* bigger tap target */
+  min-height: 44px;                /* iOS recommended */
+  border-radius: 12px;
+  border: 1px solid var(--line);
+
+  background: #0b1f42;             /* dark button */
+  color: var(--ink) !important;    /* <-- correct var usage */
+  -webkit-text-fill-color: var(--ink) !important; /* iOS Safari fix */
+
+  font-weight: 800;
+  letter-spacing: .2px;
+  cursor: pointer;
+  transition: transform .06s ease, filter .15s ease, box-shadow .15s ease;
+  text-decoration: none;
+}
+
+button:hover{
+  filter: brightness(1.05);
+}
+
+button:active{
+  transform: translateY(1px);
+  filter: brightness(0.98);
+}
+
+button:focus{
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(155,255,59,.25); /* matches your accent */
+}
+
+/* Disabled */
+button:disabled{
+  opacity: .55;
+  cursor: not-allowed;
+  filter: grayscale(.1);
+}
+
+/* Primary / Accent */
+button.primary{
+  background: var(--acc);
+  border: none;
+  color: #06240f !important;             /* dark text on lime */
+  -webkit-text-fill-color: #06240f !important; /* iOS Safari fix */
+  box-shadow: 0 6px 18px rgba(155,255,59,.18);
+}
+
+button.primary:hover{ filter: brightness(1.04); }
+button.primary:active{ transform: translateY(1px); }
+
+/* Icon-only buttons (like ✏️ 🗑️), reduce padding a bit */
+button.icon{
+  padding: 8px 10px;
+  min-width: 0;
+  line-height: 1;
+}
+
+/* Make inline buttons in list rows align nicely */
+.row button{ margin-left: 6px; }
 button.primary{background:var(--acc);color:#06240f;border:none}
 .small{font-size:12px;color:var(--mut)}
 .list-group{border:1px dashed var(--line);border-radius:16px;padding:10px;background:#0b2248}
