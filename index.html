@@ -358,26 +358,34 @@ function chipClass(name){const s=simplify(name).toLowerCase();
 function setCloudStamp(ts){ try{ localStorage.setItem('gym_cloud_at', ts || ''); }catch(e){} }
 function getCloudStamp(){ try{ return localStorage.getItem('gym_cloud_at') || ''; }catch(e){ return ''; } }
 
-/* ---------- PR map (multiple per day if each beats all-time best) ---------- */
+/* ---------- PR map (strict progression, no duplicates on ties) ---------- */
 function buildPRMap(){
-  const byEx={};
-  (state.log||[]).forEach(s=>{ (byEx[s.exercise]=byEx[s.exercise]||[]).push(s) });
-  const prIds=new Set();
-  const EPS=1e-6;
+  const byEx = {};
+  (state.log || []).forEach(s => { (byEx[s.exercise] = byEx[s.exercise] || []).push(s); });
 
-  Object.keys(byEx).forEach(ex=>{
-    const arr=byEx[ex].slice().sort((a,b)=>{
-      const d=a.date.localeCompare(b.date);
-      return d!==0 ? d : ((+a.setno||0)-(+b.setno||0));
+  const prIds = new Set();
+  const EPS = 1e-6;
+
+  Object.keys(byEx).forEach(ex => {
+    // Sort by date, then by set number, then by insertion order fallback
+    const arr = byEx[ex].slice().sort((a,b) => {
+      const d = a.date.localeCompare(b.date);
+      if (d !== 0) return d;
+      const sa = (+a.setno || 0), sb = (+b.setno || 0);
+      if (sa !== sb) return sa - sb;
+      return (a.id || '').localeCompare(b.id || '');
     });
-    let bestBefore=-Infinity;
-    for(const s of arr){
-      const val=e1(s.weight,s.reps);
-      if (val > bestBefore + EPS){      // strictly better than *all-time* best so far
+
+    let bestBefore = -Infinity; // all-time best so far
+
+    for (const s of arr) {
+      const val = e1(s.weight, s.reps); // uses 2-dec precision already
+      if (val > bestBefore + EPS) {
+        // Strictly better => PR
         prIds.add(s.id);
         bestBefore = val;
       }
-      // equal (within EPS) → not a PR; lower → not a PR
+      // Equal or lower => not a PR (prevents duplicates on ties)
     }
   });
 
