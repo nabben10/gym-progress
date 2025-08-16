@@ -14,6 +14,25 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore-compat.js"></script>
 
 <style>
+.top-bar {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background: #0b1f42; /* same color as your app header */
+}
+
+.app-logo {
+  height: 28px;
+  width: 28px;
+  margin-right: 8px;
+}
+
+.app-title {
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+}
+  
 :root{
   --bg:#07132e;--ink:#eaf2ff;--mut:#a9bde6;--line:#1b3169;
   --card1:#0a1e44;--card2:#0c2553;--acc:#9BFF3B;
@@ -151,8 +170,11 @@ button.primary{background:var(--acc);color:#06240f;border:none}
 </style>
 </head>
 <body>
-<header><h1>Gym Progress</h1><div class="badge" id="todayBadge"></div></header>
-<div class="tabs">
+<header class="top-bar">
+  <img src="logo.png" alt="Gym Progress Logo" class="app-logo">
+  <span class="app-title">Gym Progress</span>
+</header>
+  <div class="tabs">
   <div class="tab active" data-tab="log">📝 Log</div>
   <div class="tab" data-tab="history">📚 History</div>
   <div class="tab" data-tab="body">📏 Body</div>
