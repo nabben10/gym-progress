@@ -15,7 +15,7 @@
 
 <style>
 /* header bar */
-.top-bar{
+.top-bar {
   position: sticky;           /* keeps it at the top */
   top: 0;
   z-index: 10;
@@ -26,29 +26,34 @@
   background: linear-gradient(180deg,#0b1d3f,#0a1733);
   border-bottom: 1px solid var(--line);
 }
-.top-bar .brand{
-  display:flex; align-items:center; gap:8px;
-  text-decoration:none; color:var(--ink);
+.top-bar .brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--ink);
 }
 .header-logo {
-  height: 40px; /* Increase this value for bigger logo */
+  height: 50px; /* Increased from 40px */
   width: auto;
   vertical-align: middle;
 }
 
 @media (max-width: 768px) {
   .header-logo {
-    height: 32px; /* Slightly smaller for mobile */
+    height: 40px; /* Increased from 32px */
   }
 }
 
 /* make tabs sit just under the new header height */
-.tabs{ top: 56px; }   /* was 54px */
+.tabs { 
+  top: 64px; /* was 56px, adjust to match new logo height */
+}
 
 .app-title {
   color: white;
   font-weight: bold;
-  font-size: 18px;
+  font-size: 20px; /* slightly bigger for better balance */
 }
   
 :root{
