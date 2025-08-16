@@ -21,10 +21,15 @@
   background: #0b1f42; /* same color as your app header */
 }
 
-.app-logo {
-  height: 28px;
-  width: 28px;
-  margin-right: 8px;
+.header-logo {
+    height: 40px;
+    width: auto;
+}
+
+@media (max-width: 600px) {
+    .header-logo {
+        height: 30px;
+    }
 }
 
 .app-title {
@@ -171,7 +176,7 @@ button.primary{background:var(--acc);color:#06240f;border:none}
 </head>
 <body>
 <header class="top-bar">
-  <img src="logo.png" alt="Gym Progress Logo" class="app-logo">
+  <img src="header-logo.png" alt="Gym Progress Logo" class="header-logo">
   <span class="app-title">Gym Progress</span>
 </header>
   <div class="tabs">
