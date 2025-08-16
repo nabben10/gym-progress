@@ -14,23 +14,27 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore-compat.js"></script>
 
 <style>
-.top-bar {
+/* header bar */
+.top-bar{
+  position: sticky;           /* keeps it at the top */
+  top: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
-  padding: 10px;
-  background: #0b1f42; /* same color as your app header */
+  gap: 10px;
+  padding: 12px 16px;
+  background: linear-gradient(180deg,#0b1d3f,#0a1733);
+  border-bottom: 1px solid var(--line);
 }
+.top-bar .brand{
+  display:flex; align-items:center; gap:8px;
+  text-decoration:none; color:var(--ink);
+}
+.header-logo{height:28px; width:auto}
+@media (max-width:600px){ .header-logo{height:24px} }
 
-.header-logo {
-    height: 40px;
-    width: auto;
-}
-
-@media (max-width: 600px) {
-    .header-logo {
-        height: 30px;
-    }
-}
+/* make tabs sit just under the new header height */
+.tabs{ top: 56px; }   /* was 54px */
 
 .app-title {
   color: white;
@@ -176,8 +180,13 @@ button.primary{background:var(--acc);color:#06240f;border:none}
 </head>
 <body>
 <header class="top-bar">
-  <img src="header-logo.png" alt="Gym Progress Logo" class="header-logo">
-  <span class="app-title">Gym Progress</span>
+  <a href="/" class="brand" aria-label="Gym Progress — Home">
+    <img src="header-logo.png" alt="" class="header-logo">
+    <span class="app-title">Gym Progress</span>
+  </a>
+
+  <!-- This is what your JS updates -->
+  <span class="badge" id="todayBadge"></span>
 </header>
   <div class="tabs">
   <div class="tab active" data-tab="log">📝 Log</div>
