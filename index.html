@@ -26,6 +26,15 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui}
 
+/* Ensure cards never sit under sticky elements */
+.card{ position:relative; z-index:1; }
+
+/* Tabs: scrollable on mobile, but never cover content below */
+.tabs{ position:sticky; z-index:5; }
+
+/* Make sure clicks always pass through cleanly */
+.top-bar, .tabs { pointer-events:auto; }
+  
 /* ===== Header bar ===== */
 .top-bar{
   position:sticky; top:0; z-index:10;
@@ -98,6 +107,13 @@ button:disabled{opacity:.55;cursor:not-allowed;filter:grayscale(.1)}
 button.primary{background:var(--acc);border:none;color:#06240f!important;-webkit-text-fill-color:#06240f!important;box-shadow:0 6px 18px rgba(155,255,59,.18)}
 button.icon{padding:8px 10px;min-width:0;line-height:1}
 .row button{margin-left:6px}
+button.primary:disabled{
+  background:#567b2a;
+  -webkit-text-fill-color:#06240f !important;
+  opacity:.55;
+  cursor:not-allowed;
+  box-shadow:none;
+}
 
 /* ===== Set pills / chips ===== */
 .setpill{display:inline-flex;gap:6px;align-items:center;margin:6px 6px 0 0;padding:8px 10px;border-radius:12px;border:1px solid var(--line);background:#0b2a57}
@@ -292,7 +308,7 @@ button.icon{padding:8px 10px;min-width:0;line-height:1}
       <div class="grid two">
         <div><label>Status</label><div id="authStatus" class="small">Not signed in</div></div>
         <div class="btns" style="align-items:end;justify-content:flex-end">
-          <button id="btnSignIn">Sign in with Google</button>
+          <button id="btnSignIn" type="button" onclick="signIn()">Sign in with Google</button>
           <button id="btnSignOut" style="display:none">Sign out</button>
         </div>
       </div>
@@ -603,16 +619,30 @@ function onDragEndMuscle(e){e.currentTarget.classList.remove('drag-over');dragIn
 
 let dragIndexEx=null;
 function renderExerciseEditor(){
-  const mus=$('exMuscle').value || state.muscles[0];
-  const wrap=$('exerciseEditor');
-  const L=listExercises(mus);
+  // Always read the currently selected value; if none, keep last selection
+  const sel = $('exMuscle');
+  let mus = sel?.value;
+  if(!mus){
+    mus = state.muscles[0];
+    if(sel && sel.options.length) sel.value = mus;
+  }
+
+  const wrap = $('exerciseEditor');
+  const L = listExercises(mus);
+
   wrap.innerHTML = L.map((name,idx)=>`
-    <div class="row" draggable="true" data-idx="${idx}" ondragstart="onDragStartEx(event,${idx})" ondragover="onDragOverEx(event,${idx})" ondrop="onDropEx(event,${idx})" ondragend="onDragEndEx(event)">
+    <div class="row" draggable="true" data-idx="${idx}"
+         ondragstart="onDragStartEx(event,${idx})"
+         ondragover="onDragOverEx(event,${idx})"
+         ondrop="onDropEx(event,${idx})"
+         ondragend="onDragEndEx(event)">
       <div class="drag-handle">☰</div>
       <div style="flex:1"><strong>${name}</strong><div class="small">${mus}</div></div>
-      <div><button class="icon" onclick="removeExercise('${mus}','${name.replace(/"/g,'&quot;')}')" title="Remove">🗑️</button></div>
+      <div><button onclick="removeExercise('${mus}','${name.replace(/"/g,'&quot;')}')" title="Remove">🗑️</button></div>
     </div>`).join('') || '<div class="small">No exercises yet for this muscle.</div>';
-  if($('muscle').value===mus) populateExercises($('exercise'), mus);
+
+  // If the main "Log" muscle matches, keep that exercise list in sync too
+  if($('muscle').value === mus) populateExercises($('exercise'), mus);
   fillChartEx();
 }
 function onDragStartEx(e,i){dragIndexEx=i; e.dataTransfer.effectAllowed='move'}
@@ -630,8 +660,22 @@ function onDropEx(e,i){
   store.set(state); renderExerciseEditor(); toast('Exercises reordered'); try{syncUp()}catch(e){}
 }
 function onDragEndEx(e){e.currentTarget.classList.remove('drag-over');dragIndexEx=null}
-function addExercise(){const mus=$('exMuscle').value; const name=($('exName').value||'').trim(); if(!mus)return toast('Pick a muscle'); if(!name)return toast('Enter exercise name'); if(state.exercises.find(e=>e[0]===mus && e[1].toLowerCase()===name.toLowerCase())) return toast('Exercise already exists'); state.exercises.push([mus,name]); store.set(state); $('exName').value=''; renderExerciseEditor(); toast('Exercise added'); try{syncUp()}catch(e){}}
-function removeExercise(mus,name){ state.exercises = state.exercises.filter(e=>!(e[0]===mus && e[1]===name)); store.set(state); renderExerciseEditor(); toast('Exercise removed'); try{syncUp()}catch(e){}}
+function addExercise(){
+  const mus = $('exMuscle').value;
+  const name = ($('exName').value || '').trim();
+  if(!mus) return toast('Pick a muscle');
+  if(!name) return toast('Enter exercise name');
+
+  if(state.exercises.find(e => e[0]===mus && e[1].toLowerCase()===name.toLowerCase()))
+    return toast('Exercise already exists');
+
+  state.exercises.push([mus, name]);
+  store.set(state);
+  $('exName').value = '';
+  renderExerciseEditor();
+  toast('Exercise added');
+  try{ syncUp(); }catch(e){}
+}function removeExercise(mus,name){ state.exercises = state.exercises.filter(e=>!(e[0]===mus && e[1]===name)); store.set(state); renderExerciseEditor(); toast('Exercise removed'); try{syncUp()}catch(e){}}
 
 /* Backup/Restore/CSV */
 function backupJSON(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));a.download='gym_backup.json';a.click();URL.revokeObjectURL(a.href)}
@@ -644,8 +688,21 @@ let auth=null,db=null,user=null;
 function initFB(){try{firebase.initializeApp(firebaseConfig);auth=firebase.auth();db=firebase.firestore();auth.onAuthStateChanged(u=>{user=u;u?uiIn(u):uiOut()})}catch(e){}}
 function uiOut(){const st=$('authStatus'); if(st) st.textContent='Not signed in';['btnSyncUp','btnSyncDown','btnExportCloud'].forEach(id=>{const b=$(id); if(b) b.disabled=true}); const so=$('btnSignOut'); if(so) so.style.display='none'; const si=$('btnSignIn'); if(si) si.style.display=''}
 function uiIn(u){ const st=$('authStatus'); if(st) st.textContent='Signed in as '+u.email; ['btnSyncUp','btnSyncDown','btnExportCloud'].forEach(id=>{const b=$(id); if(b) b.disabled=false}); const so=$('btnSignOut'); if(so) so.style.display=''; const si=$('btnSignIn'); if(si) si.style.display='none'; autoPullOnSignIn(); }
-async function signIn(){if(!auth)return;const p=new firebase.auth.GoogleAuthProvider();try{await auth.signInWithPopup(p)}catch(e){await auth.signInWithRedirect(p)}}
-async function signOut(){if(!auth)return;await auth.signOut()}
+async function signIn(){
+  if(!auth) return;
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  try {
+    await auth.signInWithPopup(provider);           // desktop / android
+  } catch (e) {
+    try {
+      await auth.signInWithRedirect(provider);      // iOS Safari fallback
+    } catch (e2) {
+      console.warn('SIGN-IN ERR', e2);
+      toast('Google sign-in failed. Check pop-up blockers & Authorized domains.');
+    }
+  }
+}async function signOut(){if(!auth)return;await auth.signOut()}
 function docRef(){ return db && user ? db.collection('gym_progress').doc(user.uid) : null; }
 function toCloudPayload(){ const ex=(state.exercises||[]).map(e=>Array.isArray(e)?{muscle:e[0],name:e[1]}:e); return {log:state.log||[],body:state.body||[],muscles:state.muscles||DEF_MUSCLES,exercises:ex,_updatedAt:new Date().toISOString(),_v:2}; }
 function fromCloudPayload(d){ const ex=(d.exercises||[]).map(e=>Array.isArray(e)?e:[e.muscle,e.name]); return {log:d.log||[],body:d.body||[],muscles:d.muscles||DEF_MUSCLES,exercises:ex}; }
