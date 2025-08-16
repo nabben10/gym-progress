@@ -30,8 +30,17 @@
   display:flex; align-items:center; gap:8px;
   text-decoration:none; color:var(--ink);
 }
-.header-logo{height:28px; width:auto}
-@media (max-width:600px){ .header-logo{height:24px} }
+.header-logo {
+  height: 40px; /* Increase this value for bigger logo */
+  width: auto;
+  vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+  .header-logo {
+    height: 32px; /* Slightly smaller for mobile */
+  }
+}
 
 /* make tabs sit just under the new header height */
 .tabs{ top: 56px; }   /* was 54px */
