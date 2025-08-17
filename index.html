@@ -695,37 +695,43 @@ function exportCSV(){const H=['date','muscle','exercise','setno','weight','reps'
 /* Firebase (kept config) */
 const firebaseConfig={apiKey:"AIzaSyCuasVceh5n3C8I9Y5lA3br6LL_19b3_04",authDomain:"gym-progress-a6351.firebaseapp.com",projectId:"gym-progress-a6351",storageBucket:"gym-progress-a6351.firebasestorage.app",messagingSenderId:"129992731703",appId:"1:129992731703:web:a72d2c5aaccb64e35a63b2"};
 let auth=null,db=null,user=null;
-// Robust Firebase init: handles "already exists", slow loads, and sets auth/db
+// Idempotent Firebase init + consume redirect result
 function initFB(){
   try {
-    // 1) Ensure SDK is actually present
-    if (typeof firebase === 'undefined' || !firebase?.apps) {
+    if (typeof firebase === 'undefined') {
       console.error('Firebase SDK not loaded yet.');
       return;
     }
 
-    // 2) Reuse app if already initialized (prevents thrown error)
+    // Reuse existing app if already initialized
     let app;
-    try {
-      app = firebase.app();
-    } catch {
-      app = firebase.initializeApp(firebaseConfig);
-    }
+    try { app = firebase.app(); } catch { app = firebase.initializeApp(firebaseConfig); }
 
-    // 3) Get services
     auth = app.auth();
     db   = app.firestore();
 
-    // 4) Persist session locally
-    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    // Persist session so refresh keeps you signed in
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
 
-    // 5) Auth state + redirect result
-    auth.onAuthStateChanged(u => { user = u; u ? uiIn(u) : uiOut(); });
+    // Handle redirect flow results (iOS / popup-blocked)
+    auth.getRedirectResult()
+      .then(res => {
+        if (res && res.user) {
+          user = res.user;
+          uiIn(user);
+          toast('Signed in ✓');
+        }
+      })
+      .catch(err => {
+        console.warn('getRedirectResult error', err);
+      });
 
-    auth.getRedirectResult().catch(err => {
-      toast('Google sign-in error: ' + (err.message || err.code));
-      console.warn('Google redirect error', err);
+    // Normal listener (fires on popup success too)
+    auth.onAuthStateChanged(u => {
+      user = u;
+      if (u) uiIn(u); else uiOut();
     });
+
   } catch (e) {
     console.error('Firebase init error', e);
   }
@@ -734,27 +740,15 @@ function initFB(){
 function uiIn(u){ const st=$('authStatus'); if(st) st.textContent='Signed in as '+u.email; ['btnSyncUp','btnSyncDown','btnExportCloud'].forEach(id=>{const b=$(id); if(b) b.disabled=false}); const so=$('btnSignOut'); if(so) so.style.display=''; const si=$('btnSignIn'); if(si) si.style.display='none'; autoPullOnSignIn(); }
 // Tries init if auth isn't ready; popup first, then redirect fallback
 async function signIn(){
-  // If auth is not ready yet, try to initialize now
-  if (!auth) {
-    initFB();
-    // Wait a tick for SDK to settle
-    await new Promise(r => setTimeout(r, 50));
-  }
-
-  if (!auth) {
-    toast('Auth not ready. Check Firebase SDK loading and try again.');
-    console.warn('Auth object still null after initFB()');
-    return;
-  }
-
+  if (!auth) { initFB(); await new Promise(r=>setTimeout(r,50)); }
   const provider = new firebase.auth.GoogleAuthProvider();
-
   try {
-    await auth.signInWithPopup(provider);           // desktop / most browsers
+    const cred = await auth.signInWithPopup(provider);
+    if (cred && cred.user) { user = cred.user; uiIn(user); toast('Signed in ✓'); }
   } catch (e) {
-    console.warn('Popup sign-in failed, trying redirect:', e);
     try {
-      await auth.signInWithRedirect(provider);      // iOS Safari / popup blocked
+      await auth.signInWithRedirect(provider);
+      // After returning, initFB()'s getRedirectResult() will set UI.
     } catch (e2) {
       console.warn('Redirect sign-in failed:', e2);
       toast('Google sign-in failed: ' + (e2.message || e2.code));
@@ -842,9 +836,19 @@ function init(){
   window.addEventListener('error', e=>showError(e.message||'error'));
   window.addEventListener('unhandledrejection', e=>showError((e.reason&&e.reason.message)||'promise error'));
 })();
-function __boot(){ try{ init(); initFB(); }catch(e){ console.error(e); } }
-if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', __boot, {once:true}); } else { __boot(); }
-setTimeout(()=>{ var badge=$('todayBadge'); if(badge && !badge.textContent) __boot(); }, 800);
+function __boot(){
+  // prevent double-initialization (e.g., after Google redirect)
+  if (window.__APP_INITED__) return;
+  window.__APP_INITED__ = true;
+
+  try {
+    init();     // your UI wiring
+    initFB();   // firebase init & auth listener
+  } catch(e){
+    console.error(e);
+  }
+}
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', __boot, {once:true}); } else { __boot(); }
 </script>
 
 <!-- Service worker (disabled in safe mode) -->
