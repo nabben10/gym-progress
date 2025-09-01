@@ -717,7 +717,7 @@ function initFB(){
 
     // Handle redirect flow results (iOS / popup-blocked)
     auth.getRedirectResult()
-      .then(res => {
+      .then(res => { console.log('[getRedirectResult]', !!(res && res.user));
         if (res && res.user) {
           user = res.user;
           uiIn(user);
@@ -733,6 +733,7 @@ function initFB(){
       user = u;
       if (u) uiIn(u); else uiOut();
     });
+    console.log('[onAuthStateChanged]', !!u, u && u.email);
 
   } catch (e) {
     console.error('Firebase init error', e);
@@ -743,13 +744,24 @@ function uiIn(u){ const st=$('authStatus'); if(st) st.textContent='Signed in as 
 async function signIn(){
   if (!auth) { initFB(); await new Promise(r=>setTimeout(r,60)); }
   if (!auth) { toast('Auth not ready'); return; }
-
   if (signingIn) return;
   signingIn = true;
 
   const provider = new firebase.auth.GoogleAuthProvider();
 
+  // Detect iOS / Safari (including in-app webviews)
+  const ua = navigator.userAgent || navigator.vendor || '';
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
+
   try {
+    if (isIOS || isSafari) {
+      // Safari path: redirect is reliable
+      await auth.signInWithRedirect(provider);
+      return; // On return, getRedirectResult + onAuthStateChanged will run
+    }
+
+    // Non-Safari path: try popup, then redirect fallback
     const cred = await auth.signInWithPopup(provider);
     if (cred && cred.user) {
       user = cred.user;
@@ -757,11 +769,12 @@ async function signIn(){
       toast('Signed in ✓');
     }
   } catch (e) {
-    // If popup is blocked or cancelled, try redirect
-    if (e && (e.code === 'auth/popup-blocked' || e.code === 'auth/cancelled-popup-request' || e.code === 'auth/popup-closed-by-user')) {
+    // Fallbacks and helpful errors
+    if (e && (e.code === 'auth/popup-blocked' ||
+              e.code === 'auth/cancelled-popup-request' ||
+              e.code === 'auth/popup-closed-by-user')) {
       try {
         await auth.signInWithRedirect(provider);
-        // After returning, initFB()'s getRedirectResult() + onAuthStateChanged will run.
         return;
       } catch (e2) {
         toast('Google sign-in failed: ' + (e2.message || e2.code));
