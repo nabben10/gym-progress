@@ -82,7 +82,7 @@ h1,h2{margin:0 0 10px}
 label{display:block;font-size:12px;color:var(--mut);margin:8px 0 6px}
 input,select,textarea{
   width:100%;padding:12px;border-radius:14px;border:1px solid var(--line);
-  background:#0b1f42;color:var(--ink);font-size:15px
+  background:#0b1f42;color:#var(--ink);font-size:15px
 }
 input:focus,select:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(155,255,59,.25)}
 .grid{display:grid;grid-template-columns:1fr;gap:10px}
@@ -698,6 +698,7 @@ const firebaseConfig={apiKey:"AIzaSyCuasVceh5n3C8I9Y5lA3br6LL_19b3_04",authDomai
 let auth=null, db=null, user=null;
 let signingIn = false;   // <-- add this
   // Idempotent Firebase init + consume redirect result
+
   function renderRpeChips() {
   const wrap = $('rpeQuick');
   const rpe  = $('rpe');
@@ -715,6 +716,7 @@ let signingIn = false;   // <-- add this
     };
   });
 }
+
 function initFB(){
   try {
     if (typeof firebase === 'undefined') {
@@ -750,13 +752,12 @@ function initFB(){
       user = u;
       if (u) uiIn(u); else uiOut();
     });
-    console.log('[onAuthStateChanged]', !!u, u && u.email);
 
   } catch (e) {
     console.error('Firebase init error', e);
   }
 }
-  function uiOut(){const st=$('authStatus'); if(st) st.textContent='Not signed in';['btnSyncUp','btnSyncDown','btnExportCloud'].forEach(id=>{const b=$(id); if(b) b.disabled=true}); const so=$('btnSignOut'); if(so) so.style.display='none'; const si=$('btnSignIn'); if(si) si.style.display=''}
+function uiOut(){const st=$('authStatus'); if(st) st.textContent='Not signed in';['btnSyncUp','btnSyncDown','btnExportCloud'].forEach(id=>{const b=$(id); if(b) b.disabled=true}); const so=$('btnSignOut'); if(so) so.style.display='none'; const si=$('btnSignIn'); if(si) si.style.display=''}
 function uiIn(u){ const st=$('authStatus'); if(st) st.textContent='Signed in as '+u.email; ['btnSyncUp','btnSyncDown','btnExportCloud'].forEach(id=>{const b=$(id); if(b) b.disabled=false}); const so=$('btnSignOut'); if(so) so.style.display=''; const si=$('btnSignIn'); if(si) si.style.display='none'; autoPullOnSignIn(); }
 async function signIn(){
   if (!auth) { initFB(); await new Promise(r=>setTimeout(r,60)); }
@@ -866,7 +867,10 @@ function init(){
   $('addMuscleBtn').onclick=addMuscle; $('addExercise').onclick=addExercise; $('exMuscle').onchange=renderExerciseEditor;
   $('chMetric').onchange=renderChart; $('chRange').onchange=renderChart; $('chEx').onchange=renderChart;
 
-  // RPE quick chips + clamp
+  // ===== RPE quick chips (ADD: render) =====
+  renderRpeChips();
+
+  // RPE clamp/keyboard handling
   const rpe=$('rpe');
   rpe.addEventListener('keydown',e=>{ if(e.key==='Enter') rpe.blur(); });
   rpe.addEventListener('blur',()=>{ if(rpe.value==='') return; const v=clampRPE(rpe.value); if(String(v)!==String(rpe.value)){ rpe.value=v; toast('RPE must be 1–10'); } });
