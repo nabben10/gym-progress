@@ -82,7 +82,8 @@ h1,h2{margin:0 0 10px}
 label{display:block;font-size:12px;color:var(--mut);margin:8px 0 6px}
 input,select,textarea{
   width:100%;padding:12px;border-radius:14px;border:1px solid var(--line);
-  background:#0b1f42;color:#var(--ink);font-size:15px
+  background:#0b1f42;color: var(--ink); /* FIX: was color:#var(--ink) */
+  font-size:15px
 }
 input:focus,select:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(155,255,59,.25)}
 .grid{display:grid;grid-template-columns:1fr;gap:10px}
@@ -387,18 +388,27 @@ function buildPRMap(){
 /* Dropdowns */
 function populateMuscles(sel){
   if (!sel) return;
-  const prev = sel.value; // remember current selection
+  const prev = sel.value;
   sel.innerHTML = state.muscles.map(m => `<option value="${m}">${m}</option>`).join('');
 
-  // restore previous selection if it still exists, otherwise first option
   if (prev && [...sel.options].some(o => o.value === prev)) {
     sel.value = prev;
   } else if (sel.options.length) {
     sel.value = sel.options[0].value;
   }
+
+  /* FIX: keep the Exercise select in sync whenever #muscle is (re)populated */
+  if (sel.id === 'muscle') {
+    sel.dispatchEvent(new Event('change'));
+  }
 }
 function listExercises(m){return state.exercises.filter(e=>e[0]===m).map(e=>e[1])}
-function populateExercises(sel,m){const L=listExercises(m); sel.innerHTML=L.map(n=>`<option value="${n}">${n}</option>`).join(''); if(!sel.value&&sel.options.length) sel.value=sel.options[0].value; if(!sel.options.length) sel.innerHTML='<option value="">Select exercise</option>'}
+function populateExercises(sel,m){
+  const L=listExercises(m);
+  sel.innerHTML=L.map(n=>`<option value="${n}">${n}</option>`).join('');
+  if(!sel.value&&sel.options.length) sel.value=sel.options[0].value;
+  if(!sel.options.length) sel.innerHTML='<option value="">Select exercise</option>';
+}
 
 /* Summary (today) */
 function renderTodaySummary(){
@@ -630,7 +640,6 @@ function onDragEndMuscle(e){e.currentTarget.classList.remove('drag-over');dragIn
 
 let dragIndexEx=null;
 function renderExerciseEditor(){
-  // Always read the currently selected value; if none, keep last selection
   const sel = $('exMuscle');
   let mus = sel?.value;
   if(!mus){
@@ -652,7 +661,6 @@ function renderExerciseEditor(){
       <div><button onclick="removeExercise('${mus}','${name.replace(/"/g,'&quot;')}')" title="Remove">🗑️</button></div>
     </div>`).join('') || '<div class="small">No exercises yet for this muscle.</div>';
 
-  // If the main "Log" muscle matches, keep that exercise list in sync too
   if($('muscle').value === mus) populateExercises($('exercise'), mus);
   fillChartEx();
 }
@@ -686,7 +694,14 @@ function addExercise(){
   renderExerciseEditor();
   toast('Exercise added');
   try{ syncUp(); }catch(e){}
-}function removeExercise(mus,name){ state.exercises = state.exercises.filter(e=>!(e[0]===mus && e[1]===name)); store.set(state); renderExerciseEditor(); toast('Exercise removed'); try{syncUp()}catch(e){}}
+}
+function removeExercise(mus,name){
+  state.exercises = state.exercises.filter(e=>!(e[0]===mus && e[1]===name));
+  store.set(state);
+  renderExerciseEditor();
+  toast('Exercise removed');
+  try{syncUp()}catch(e){}
+}
 
 /* Backup/Restore/CSV */
 function backupJSON(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));a.download='gym_backup.json';a.click();URL.revokeObjectURL(a.href)}
@@ -696,10 +711,10 @@ function exportCSV(){const H=['date','muscle','exercise','setno','weight','reps'
 /* Firebase (kept config) */
 const firebaseConfig={apiKey:"AIzaSyCuasVceh5n3C8I9Y5lA3br6LL_19b3_04",authDomain:"gym-progress-a6351.firebaseapp.com",projectId:"gym-progress-a6351",storageBucket:"gym-progress-a6351.firebasestorage.app",messagingSenderId:"129992731703",appId:"1:129992731703:web:a72d2c5aaccb64e35a63b2"};
 let auth=null, db=null, user=null;
-let signingIn = false;   // <-- add this
-  // Idempotent Firebase init + consume redirect result
+let signingIn = false;
 
-  function renderRpeChips() {
+/* RPE chips builder (used during init) */
+function renderRpeChips() {
   const wrap = $('rpeQuick');
   const rpe  = $('rpe');
   if (!wrap || !rpe) return;
@@ -708,15 +723,15 @@ let signingIn = false;   // <-- add this
     .map(v => `<span class="rpechip" data-v="${v}">${v}</span>`)
     .join('');
 
-  // Attach click handlers
   wrap.querySelectorAll('.rpechip').forEach(el => {
     el.onclick = () => {
       rpe.value = el.dataset.v;
-      rpe.blur();   // triggers your clamp/validation on blur
+      rpe.blur(); /* triggers clamp/validation on blur */
     };
   });
 }
 
+/* Idempotent Firebase init + consume redirect result */
 function initFB(){
   try {
     if (typeof firebase === 'undefined') {
@@ -724,19 +739,17 @@ function initFB(){
       return;
     }
 
-    // Reuse existing app if already initialized
     let app;
     try { app = firebase.app(); } catch { app = firebase.initializeApp(firebaseConfig); }
 
     auth = app.auth();
     db   = app.firestore();
 
-    // Persist session so refresh keeps you signed in
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
 
-    // Handle redirect flow results (iOS / popup-blocked)
     auth.getRedirectResult()
-      .then(res => { console.log('[getRedirectResult]', !!(res && res.user));
+      .then(res => {
+        console.log('[getRedirectResult]', !!(res && res.user));
         if (res && res.user) {
           user = res.user;
           uiIn(user);
@@ -747,7 +760,6 @@ function initFB(){
         console.warn('getRedirectResult error', err);
       });
 
-    // Normal listener (fires on popup success too)
     auth.onAuthStateChanged(u => {
       user = u;
       if (u) uiIn(u); else uiOut();
@@ -766,20 +778,15 @@ async function signIn(){
   signingIn = true;
 
   const provider = new firebase.auth.GoogleAuthProvider();
-
-  // Detect iOS / Safari (including in-app webviews)
   const ua = navigator.userAgent || navigator.vendor || '';
   const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
 
   try {
     if (isIOS || isSafari) {
-      // Safari path: redirect is reliable
       await auth.signInWithRedirect(provider);
-      return; // On return, getRedirectResult + onAuthStateChanged will run
+      return;
     }
-
-    // Non-Safari path: try popup, then redirect fallback
     const cred = await auth.signInWithPopup(provider);
     if (cred && cred.user) {
       user = cred.user;
@@ -787,7 +794,6 @@ async function signIn(){
       toast('Signed in ✓');
     }
   } catch (e) {
-    // Fallbacks and helpful errors
     if (e && (e.code === 'auth/popup-blocked' ||
               e.code === 'auth/cancelled-popup-request' ||
               e.code === 'auth/popup-closed-by-user')) {
@@ -867,10 +873,9 @@ function init(){
   $('addMuscleBtn').onclick=addMuscle; $('addExercise').onclick=addExercise; $('exMuscle').onchange=renderExerciseEditor;
   $('chMetric').onchange=renderChart; $('chRange').onchange=renderChart; $('chEx').onchange=renderChart;
 
-  // ===== RPE quick chips (ADD: render) =====
+  /* FIX: actually render the RPE chips */
   renderRpeChips();
 
-  // RPE clamp/keyboard handling
   const rpe=$('rpe');
   rpe.addEventListener('keydown',e=>{ if(e.key==='Enter') rpe.blur(); });
   rpe.addEventListener('blur',()=>{ if(rpe.value==='') return; const v=clampRPE(rpe.value); if(String(v)!==String(rpe.value)){ rpe.value=v; toast('RPE must be 1–10'); } });
@@ -892,18 +897,17 @@ function init(){
   window.addEventListener('unhandledrejection', e=>showError((e.reason&&e.reason.message)||'promise error'));
 })();
 function __boot(){
-  // prevent double-initialization (e.g., after Google redirect)
   if (window.__APP_INITED__) return;
   window.__APP_INITED__ = true;
 
   try {
-    init();     // your UI wiring
-    initFB();   // firebase init & auth listener
+    init();
+    initFB();
   } catch(e){
     console.error(e);
   }
 }
-  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', __boot, {once:true}); } else { __boot(); }
+if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', __boot, {once:true}); } else { __boot(); }
 </script>
 
 <!-- Service worker (disabled in safe mode) -->
