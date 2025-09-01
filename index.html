@@ -698,6 +698,23 @@ const firebaseConfig={apiKey:"AIzaSyCuasVceh5n3C8I9Y5lA3br6LL_19b3_04",authDomai
 let auth=null, db=null, user=null;
 let signingIn = false;   // <-- add this
   // Idempotent Firebase init + consume redirect result
+  function renderRpeChips() {
+  const wrap = $('rpeQuick');
+  const rpe  = $('rpe');
+  if (!wrap || !rpe) return;
+
+  wrap.innerHTML = [6,7,8,9,10]
+    .map(v => `<span class="rpechip" data-v="${v}">${v}</span>`)
+    .join('');
+
+  // Attach click handlers
+  wrap.querySelectorAll('.rpechip').forEach(el => {
+    el.onclick = () => {
+      rpe.value = el.dataset.v;
+      rpe.blur();   // triggers your clamp/validation on blur
+    };
+  });
+}
 function initFB(){
   try {
     if (typeof firebase === 'undefined') {
@@ -851,7 +868,6 @@ function init(){
 
   // RPE quick chips + clamp
   const rpe=$('rpe');
-  (function(){ const wrap=$('rpeQuick'); if(!wrap) return; wrap.innerHTML=[6,7,8,9,10].map(v=>`<span class="rpechip" data-v="${v}">${v}</span>`).join(''); wrap.querySelectorAll('.rpechip').forEach(el=>{ el.onclick=()=>{ rpe.value=el.dataset.v; rpe.blur(); }; }); })();
   rpe.addEventListener('keydown',e=>{ if(e.key==='Enter') rpe.blur(); });
   rpe.addEventListener('blur',()=>{ if(rpe.value==='') return; const v=clampRPE(rpe.value); if(String(v)!==String(rpe.value)){ rpe.value=v; toast('RPE must be 1–10'); } });
 
